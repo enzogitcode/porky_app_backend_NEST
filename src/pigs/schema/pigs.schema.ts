@@ -3,19 +3,22 @@ import { HydratedDocument } from 'mongoose'
 
 export type PigsDocument = HydratedDocument<Pig>
 
-@Schema()
+@Schema({
+    timestamps:true
+})
 export class Pig {
     @Prop({
         required:true,
-        unique:true
+        unique:true,
+        trim:true
     })
     nroCaravana: Number
 
     @Prop({
-        required:true
+        required:true,
+        trim:true
     })
-    status:boolean
-
+    descripcion:string
 
 }
 

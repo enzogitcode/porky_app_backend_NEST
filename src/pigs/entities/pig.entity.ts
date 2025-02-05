@@ -1,8 +1,7 @@
 export class Pig {
     nroCaravana: number
-    status: boolean
-    fechaVenta?: Date
-    fechaCompra?: Date
-    fechaFallecimiento?: Date
-    nroPariciones?: object
+    descripcion:string
+    fechaFallecimiento?:Date
+    pariciones?:Array<Object>
+    
 }

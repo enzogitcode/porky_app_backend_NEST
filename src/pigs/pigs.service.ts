@@ -1,29 +1,31 @@
 import { Injectable } from '@nestjs/common';
 import { CreatePigDto } from './dto/create-pig.dto';
 import { UpdatePigDto } from './dto/update-pig.dto';
-import { Pig } from './entities/pig.entity';
+import { InjectModel } from '@nestjs/mongoose';
+import {PigsDocument, Pig} from './schema/pigs.schema'
+import { Model } from 'mongoose';
 @Injectable()
 export class PigsService {
-  pigs:Array<Pig>
-  constructor () {
-    this.pigs= []
+  constructor(@InjectModel(Pig.name) private pigsModel: Model<PigsDocument>) {
   }
-  create(createPigDto: CreatePigDto) {
-    return 'This action adds a new pig';
+  create(createPig: CreatePigDto) {
+    const createdPig= new this.pigsModel(createPig)
+    return createdPig.save()
   }
   findAll() {
-    return this.pigs;
+    return this.pigsModel.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} pig`;
+  findOne(nroCaravana: number) {
+    return this.pigsModel.findOne({nroCaravana});
   }
 
-  update(id: number, updatePigDto: UpdatePigDto) {
-    return `This action updates a #${id} pig`;
+  update(nroCaravana: number, updatePigDto: UpdatePigDto) {
+    this.pigsModel.deleteOne
+return this.pigsModel.updateOne({nroCaravana}, updatePigDto)
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} pig`;
+  remove(nroCaravana: number) {
+    return this.pigsModel.deleteOne({nroCaravana})
   }
 }
