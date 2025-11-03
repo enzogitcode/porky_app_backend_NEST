@@ -7,7 +7,7 @@ export class CreatePigDto {
     @IsNumber()
     nroCaravana:number
     @IsString()
-    descripcion: string
+    descripcion?: string|undefined
     @IsDate()
     fechaFallecimiento:Date|null
     @IsObject()
