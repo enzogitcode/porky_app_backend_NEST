@@ -1,13 +1,22 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import config from './config/config'
-import {ConfigModule} from '@nestjs/config'
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  
+  //validations
   app.useGlobalPipes(new ValidationPipe())
+  
+  //cors
   app.enableCors()
-  await app.listen(config.port||3000);
+  
+//listen
+const configService= app.get(ConfigService)
+const port = configService.get<number>('PORT') ||3000
+  await app.listen(port);
+  console.log(`Escuchando en el puerto ${port}`)
 }
 bootstrap();
