@@ -1,10 +1,9 @@
-import { situacion } from "../dto/create-pig.dto"
+import { ParicionDto, Situacion } from "../dto/create-pig.dto";
 
 export class Pig {
-    nroCaravana: number
-    descripcion:string
-    fechaFallecimiento?:Date
-    pariciones?:Array<Object>
-    situacion:situacion
-    
+  nroCaravana: number;
+  descripcion?: string;
+  fechaFallecimiento?: Date;
+  pariciones?: ParicionDto[];
+  estadio: Situacion;
 }

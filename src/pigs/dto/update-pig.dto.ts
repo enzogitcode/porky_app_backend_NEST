@@ -1,16 +1,19 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { CreatePigDto, Situacion } from './create-pig.dto';
-import {IsDate, IsObject, IsString} from 'class-validator'
-import { Pariciones } from './create-pig.dto';
-export class UpdatePigDto extends PartialType(CreatePigDto) {
-    @IsString()
-    descripcion?: string;
-    @IsDate()
-    fechaFallecimiento?: Date;
-    
-    @IsObject()
-    pariciones?:Array<Pariciones>
-    
-    estadio:Situacion
+import { CreatePigDto, Situacion, ParicionDto } from './create-pig.dto';
+import { IsArray, IsDate, IsString, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 
+export class UpdatePigDto extends PartialType(CreatePigDto) {
+  @IsString()
+  descripcion?: string;
+
+  @IsDate()
+  fechaFallecimiento?: Date;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ParicionDto)
+  pariciones?: ParicionDto[];
+
+  estadio?: Situacion;
 }

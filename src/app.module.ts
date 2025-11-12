@@ -4,7 +4,6 @@ import { AppService } from './app.service';
 import { PigsModule } from './pigs/pigs.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { HembrasModule } from './hembras/hembras.module';
 
 
 @Module({
@@ -30,7 +29,7 @@ import { HembrasModule } from './hembras/hembras.module';
     envFilePath:['.env.development.local']
   }),
 
-  HembrasModule
+  PigsModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,0 +1,209 @@
+Perfecto. Te voy a dar **todo el resource de `pigs` listo**, integrado y consistente:
+
+---
+
+## **1️⃣ DTOs (`create-pig.dto.ts`)**
+
+```ts
+export type Situacion = 'pregnant' | 'parida con lechones' | 'servida' | 'enferma' | 'ninguno';
+
+export class ServicioDto {
+  tipo: 'cerdo' | 'inseminacion' | 'desconocido';
+  fecha: Date;
+  macho?: string | null;
+}
+
+export class ParicionDto {
+  fechaParicion: Date;
+  cantidadLechones: number;
+  descripcion?: string;
+  servicio?: ServicioDto;
+}
+
+export class CreatePigDto {
+  nroCaravana: number;
+  descripcion?: string;
+  estadio: Situacion;
+  pariciones?: ParicionDto[];
+}
+```
+
+---
+
+## **2️⃣ Update DTO (`update-pig.dto.ts`)**
+
+```ts
+import { PartialType } from '@nestjs/mapped-types';
+import { CreatePigDto, Situacion, ParicionDto } from './create-pig.dto';
+import { IsArray, IsDate, IsString, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class UpdatePigDto extends PartialType(CreatePigDto) {
+  @IsString()
+  descripcion?: string;
+
+  @IsDate()
+  fechaFallecimiento?: Date;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ParicionDto)
+  pariciones?: ParicionDto[];
+
+  estadio?: Situacion;
+}
+```
+
+---
+
+## **3️⃣ Schema (`pigs.schema.ts`)**
+
+```ts
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument } from 'mongoose';
+import { Situacion } from '../dto/create-pig.dto';
+
+export type PigDocument = HydratedDocument<Pig>;
+
+@Schema()
+export class Servicio {
+  @Prop({ enum: ['cerdo', 'inseminacion', 'desconocido'], required: true })
+  tipo: string;
+
+  @Prop({ type: Date, required: true })
+  fecha: Date;
+
+  @Prop()
+  macho?: string | null;
+}
+
+@Schema()
+export class Paricion {
+  @Prop({ type: Date })
+  fechaParicion: Date;
+
+  @Prop()
+  cantidadLechones: number;
+
+  @Prop()
+  descripcion?: string;
+
+  @Prop({ type: Servicio })
+  servicio?: Servicio;
+
+  @Prop({ type: Date, default: Date.now })
+  fechaActualizacion: Date; // timestamp de la parición
+}
+
+@Schema({ timestamps: true }) // timestamps automáticos del cerdo
+export class Pig {
+  @Prop({ required: true })
+  nroCaravana: number;
+
+  @Prop()
+  descripcion?: string;
+
+  @Prop({
+    required: true,
+  })
+  estadio: Situacion;
+
+  @Prop({ type: [Paricion], default: [] })
+  pariciones?: Paricion[];
+}
+
+export const PigSchema = SchemaFactory.createForClass(Pig);
+```
+
+---
+
+## **4️⃣ Service (`pigs.service.ts`)**
+
+```ts
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Pig, PigDocument } from './schema/pigs.schema';
+import { CreatePigDto, ParicionDto } from './dto/create-pig.dto';
+import { UpdatePigDto } from './dto/update-pig.dto';
+
+@Injectable()
+export class PigsService {
+  constructor(@InjectModel(Pig.name) private pigModel: Model<PigDocument>) {}
+
+  async create(createPigDto: CreatePigDto): Promise<Pig> {
+    const pig = new this.pigModel(createPigDto);
+    return pig.save();
+  }
+
+  async findAll(): Promise<Pig[]> {
+    return this.pigModel.find().exec();
+  }
+
+  async findOne(id: string): Promise<Pig | null> {
+    return this.pigModel.findById(id).exec();
+  }
+
+  async findByCaravana(nroCaravana: number): Promise<Pig | null> {
+    return this.pigModel.findOne({ nroCaravana }).exec();
+  }
+
+  async update(id: string, updateData: UpdatePigDto): Promise<Pig> {
+    return this.pigModel
+      .findByIdAndUpdate(
+        id,
+        { ...updateData, updatedAt: new Date() },
+        { new: true },
+      )
+      .exec();
+  }
+
+  async addParicion(id: string, paricion: ParicionDto): Promise<Pig> {
+    paricion.fechaActualizacion = new Date();
+    return this.pigModel
+      .findByIdAndUpdate(
+        id,
+        { $push: { pariciones: paricion }, updatedAt: new Date() },
+        { new: true },
+      )
+      .exec();
+  }
+
+  async updateParicion(
+    pigId: string,
+    paricionIndex: number,
+    paricion: Partial<ParicionDto>,
+  ): Promise<Pig> {
+    const pig = await this.pigModel.findById(pigId);
+    if (!pig || !pig.pariciones || !pig.pariciones[paricionIndex])
+      throw new Error('Parición no encontrada');
+
+    pig.pariciones[paricionIndex] = {
+      ...pig.pariciones[paricionIndex].toObject(),
+      ...paricion,
+      fechaActualizacion: new Date(),
+    };
+
+    return pig.save();
+  }
+
+  async remove(id: string): Promise<Pig> {
+    return this.pigModel.findByIdAndDelete(id).exec();
+  }
+}
+```
+
+---
+
+✅ Con esto ya tienes:
+
+* **DTOs completos** (`CreatePigDto`, `UpdatePigDto`, `ParicionDto`, `ServicioDto`).
+* **Schema Mongoose** con timestamps para cerdo y parición.
+* **Service** con creación, actualización, añadir pariciones, actualizar parición y búsqueda por `nroCaravana`.
+* Sin `any`, todo tipado correctamente.
+
+---
+
+Si querés, puedo armar **el controller `pigs.controller.ts` completo** usando este service, listo para exponer todas las rutas REST, incluyendo update parcial de pariciones.
+
+¿Querés que haga eso?

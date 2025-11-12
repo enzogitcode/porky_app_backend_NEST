@@ -1,11 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
+import { Situacion } from '../dto/create-pig.dto';
 
 export type PigDocument = HydratedDocument<Pig>;
 
 @Schema()
 export class Servicio {
-  @Prop({ enum: ['cerdo', 'inseminacion'], required: true })
+  @Prop({ enum: ['cerdo', 'inseminacion', 'desconocido'], required: true })
   tipo: string;
 
   @Prop({ type: Date, required: true })
@@ -26,12 +27,14 @@ export class Paricion {
   @Prop()
   descripcion?: string;
 
-  // Cada parición puede tener su propio servicio asociado
   @Prop({ type: Servicio })
   servicio?: Servicio;
+
+  @Prop({ type: Date, default: Date.now })
+  fechaActualizacion: Date; // timestamp de la parición
 }
 
-@Schema({ timestamps: true })
+@Schema({ timestamps: true }) // timestamps automáticos del cerdo
 export class Pig {
   @Prop({ required: true })
   nroCaravana: number;
@@ -40,13 +43,10 @@ export class Pig {
   descripcion?: string;
 
   @Prop({
-    type: String,
-    enum: ['pregnant', 'parida con lechones', 'servida', 'enferma', 'ninguno'],
     required: true,
   })
-  estadio: string;
+  estadio: Situacion;
 
-  // Historial completo de pariciones (cada una con su propio servicio)
   @Prop({ type: [Paricion], default: [] })
   pariciones?: Paricion[];
 }
