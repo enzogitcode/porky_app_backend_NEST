@@ -1,31 +1,47 @@
 import { Injectable } from '@nestjs/common';
-import { CreatePigDto } from './dto/create-pig.dto';
-import { UpdatePigDto } from './dto/update-pig.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import {PigsDocument, Pig} from './schema/pigs.schema'
 import { Model } from 'mongoose';
+import { Pig, PigDocument } from './schema/pigs.schema';
+import { CreatePigDto, ParicionDto } from './dto/create-pig.dto';
+
 @Injectable()
 export class PigsService {
-  constructor(@InjectModel(Pig.name) private pigsModel: Model<PigsDocument>) {
-  }
-  create(createPig: CreatePigDto) {
-    const createdPig= new this.pigsModel(createPig)
-    return createdPig.save()
-  }
-  findAll() {
-    return this.pigsModel.find();
+  constructor(@InjectModel(Pig.name) private pigModel: Model<PigDocument>) {}
+
+  async create(createPigDto: CreatePigDto): Promise<Pig> {
+    const pig = new this.pigModel(createPigDto);
+    return pig.save();
   }
 
-  findOne(nroCaravana: number) {
-    return this.pigsModel.findOne({nroCaravana});
+  async findAll(): Promise<Pig[]> {
+    return this.pigModel.find().exec();
   }
 
-  update(nroCaravana: number, updatePigDto: UpdatePigDto) {
-    this.pigsModel.deleteOne
-return this.pigsModel.updateOne({nroCaravana}, updatePigDto)
+  async findOne(id: string): Promise<Pig | null> {
+    return this.pigModel.findById(id).exec();
   }
 
-  remove(nroCaravana: number) {
-    return this.pigsModel.deleteOne({nroCaravana})
+  async findByCaravana(nroCaravana: number): Promise<Pig | null> {
+    return this.pigModel.findOne({ nroCaravana }).exec();
+  }
+
+  async update(id: string, updateData: Partial<CreatePigDto>): Promise<Pig> {
+    return this.pigModel
+      .findByIdAndUpdate(id, updateData, { new: true })
+      .exec();
+  }
+
+  async addParicion(id: string, paricion: ParicionDto): Promise<Pig> {
+    return this.pigModel
+      .findByIdAndUpdate(
+        id,
+        { $push: { pariciones: paricion } }, // agrega al array sin borrar lo anterior
+        { new: true },
+      )
+      .exec();
+  }
+
+  async remove(id: string): Promise<Pig> {
+    return this.pigModel.findByIdAndDelete(id).exec();
   }
 }

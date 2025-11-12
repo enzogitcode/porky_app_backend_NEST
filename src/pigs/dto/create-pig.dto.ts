@@ -1,11 +1,9 @@
-// dto/create-pig.dto.ts
 import {
   IsArray,
   IsDateString,
   IsNumber,
   IsOptional,
   IsString,
-  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -17,15 +15,33 @@ export type Situacion =
   | 'enferma'
   | 'ninguno';
 
-export class Paricion {
+export class ServicioDto {
+  @IsString()
+  tipo: 'cerdo' | 'inseminacion';
+
+  @IsDateString()
+  fecha: string;
+
+  @IsOptional()
+  @IsString()
+  macho?: string | null;
+}
+
+export class ParicionDto {
   @IsDateString()
   fechaParicion: string;
 
   @IsNumber()
   cantidadLechones: number;
 
+  @IsOptional()
   @IsString()
-  descripcion: string;
+  descripcion?: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ServicioDto)
+  servicio?: ServicioDto;
 }
 
 export class CreatePigDto {
@@ -36,16 +52,12 @@ export class CreatePigDto {
   @IsString()
   descripcion?: string;
 
-  @IsOptional()
-  @IsDateString()
-  fechaFallecimiento?: string | null;
-
   @IsString()
   estadio: Situacion;
 
-  @ValidateIf((o) => o.estadio === 'parida con lechones')
+  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => Paricion)
-  pariciones?: Paricion[];
+  @Type(() => ParicionDto)
+  pariciones?: ParicionDto[];
 }
