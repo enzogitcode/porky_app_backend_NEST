@@ -26,7 +26,7 @@ export class Paricion {
   @Prop()
   descripcion?: string;
 
-  // Cada parto guarda su propio servicio (natural o inseminación)
+  // Cada parición puede tener su propio servicio asociado
   @Prop({ type: Servicio })
   servicio?: Servicio;
 }
@@ -46,7 +46,7 @@ export class Pig {
   })
   estadio: string;
 
-  // Historial de partos
+  // Historial completo de pariciones (cada una con su propio servicio)
   @Prop({ type: [Paricion], default: [] })
   pariciones?: Paricion[];
 }
