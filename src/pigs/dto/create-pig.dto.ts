@@ -1,24 +1,51 @@
-import {IsArray, IsBoolean, IsDate, IsNumber, IsString} from 'class-validator'
+// dto/create-pig.dto.ts
+import {
+  IsArray,
+  IsDateString,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateIf,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 
-export type situacion = 'pregnant'|'parida con lechones'|'servida'|'enferma'|'ninguno'
-export class pariciones {
-    fechaParicion: Date
-    cantidadLechones:number
-    descripcion:string
+export type Situacion =
+  | 'pregnant'
+  | 'parida con lechones'
+  | 'servida'
+  | 'enferma'
+  | 'ninguno';
+
+export class Paricion {
+  @IsDateString()
+  fechaParicion: string;
+
+  @IsNumber()
+  cantidadLechones: number;
+
+  @IsString()
+  descripcion: string;
 }
-//posibles datos para una cerda
+
 export class CreatePigDto {
-    @IsNumber()
-    nroCaravana:number
+  @IsNumber()
+  nroCaravana: number;
 
-    @IsString()
-    descripcion?: string|undefined
+  @IsOptional()
+  @IsString()
+  descripcion?: string;
 
-    @IsDate()
-    fechaFallecimiento:Date|null
+  @IsOptional()
+  @IsDateString()
+  fechaFallecimiento?: string | null;
 
-    estadio:situacion
+  @IsString()
+  estadio: Situacion;
 
-    @IsArray()
-    pariciones?:Array<pariciones>
+  @ValidateIf((o) => o.estadio === 'parida con lechones')
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => Paricion)
+  pariciones?: Paricion[];
 }
