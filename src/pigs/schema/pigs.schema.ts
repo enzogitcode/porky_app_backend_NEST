@@ -47,7 +47,7 @@ export class Pig {
   })
   estadio: Situacion;
 
-  @Prop({ type: [Paricion], default: [] })
+  @Prop({ type: [Paricion], default: []})
   pariciones?: Paricion[];
 }
 
