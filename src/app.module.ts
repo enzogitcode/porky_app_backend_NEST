@@ -5,7 +5,9 @@ import { PigsModule } from './pigs/pigs.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
-
+const envFile = process.env.NODE_ENV
+  ? `.env.${process.env.NODE_ENV}.local`
+  : '.env.development.local';
 @Module({
   imports: [
     PigsModule, 
@@ -26,9 +28,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
   ConfigModule.forRoot({
     
     isGlobal:true,
-    envFilePath:['.env.development.local']
+    envFilePath:process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}.local`:`.env.development.local`
   }),
-
   PigsModule
   ],
   controllers: [AppController],

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Pig, PigDocument } from './schema/pigs.schema';
@@ -10,9 +10,30 @@ export class PigsService {
   constructor(@InjectModel(Pig.name) private pigModel: Model<PigDocument>) {}
 
   async create(createPigDto: CreatePigDto): Promise<Pig> {
-    const pig = new this.pigModel(createPigDto);
-    return pig.save();
+  const pig = new this.pigModel({
+    ...createPigDto,
+    pariciones: createPigDto.pariciones?.map(p => ({
+      ...p,
+      fechaParicion: new Date(p.fechaParicion),
+      fechaActualizacion: new Date(),
+      servicio: p.servicio ? {
+        ...p.servicio,
+        fecha: new Date(p.servicio.fecha)
+      } : undefined,
+    })) || []
+  });
+
+  try {
+    return await pig.save();
+  } catch (err) {
+    // Para duplicado de nroCaravana
+    if (err.code === 11000) {
+      throw new BadRequestException('La caravana ya existe');
+    }
+    throw err;
   }
+}
+
 
   async findAll(): Promise<Pig[]> {
     return this.pigModel.find().exec();
