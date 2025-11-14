@@ -64,6 +64,7 @@ export class PigsController {
   async remove(@Param('id') id: string): Promise<Pig> {
     const pig = await this.pigsService.remove(id);
     if (!pig) throw new NotFoundException(`Pig with id ${id} not found`);
+    
     return pig;
   }
 }

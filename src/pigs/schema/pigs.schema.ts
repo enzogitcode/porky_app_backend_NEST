@@ -49,6 +49,9 @@ export class Pig {
 
   @Prop({ type: [Paricion], default: []})
   pariciones?: Paricion[];
+
+  @Prop()
+  ubicacion?:string
 }
 
 export const PigSchema = SchemaFactory.createForClass(Pig);

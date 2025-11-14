@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsDate, IsEnum, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsDate, IsEnum, IsNumber, IsOptional, IsString, ValidateIf, ValidateNested } from 'class-validator';
 
 export type Situacion = 'pregnant' | 'parida con lechones' | 'servida'| 'enferma'| 'ninguno'
 export class ServicioDto {
@@ -10,6 +10,7 @@ export class ServicioDto {
   @Type(() => Date)  // <--- convierte string a Date
   fecha: Date;
 
+  @ValidateIf(o => o.tipo === 'cerdo')
   @IsOptional()
   @IsString()
   macho?: string | null;
@@ -19,6 +20,11 @@ export class ParicionDto {
   @IsDate()
   @Type(() => Date)
   fechaParicion: Date;
+   get fechaFormateada(): string {
+    return this.fechaParicion
+      ? this.fechaParicion.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+      : '';
+  }
 
   @IsNumber()
   cantidadLechones: number;
@@ -39,8 +45,10 @@ export class ParicionDto {
 export class CreatePigDto {
   @IsNumber()
   nroCaravana: number;
-
   
+ @IsEnum(['pregnant', 'parida con lechones', 'servida', 'enferma', 'ninguno'], {
+    message: 'estadio no es válido',
+  })
   estadio: Situacion;
 
   @IsOptional()
@@ -53,4 +61,7 @@ export class CreatePigDto {
   @ValidateNested({ each: true })
   @Type(() => ParicionDto)
   pariciones?: ParicionDto[];
+
+  @IsOptional()
+  imageUrls?:string[]
 }
