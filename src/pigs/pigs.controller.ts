@@ -16,38 +16,37 @@ import { Pig } from './schema/pigs.schema';
 export class PigsController {
   constructor(private readonly pigsService: PigsService) {}
 
+  //crear pig
   @Post()
   async create(@Body() createPigDto: CreatePigDto): Promise<Pig> {
     return this.pigsService.create(createPigDto);
   }
-
+  //obtener todos los pigs
   @Get()
   async findAll(): Promise<Pig[]> {
     return this.pigsService.findAll();
   }
-
+  //obtener un pig por id
   @Get(':id')
   async findById(@Param('id') id: string): Promise<Pig> {
     return await this.pigsService.findById(id);
   }
-
+  //obtener un pig por caravana
   @Get('caravana/:nroCaravana')
   async findByCaravana(@Param('nroCaravana') nroCaravana: string): Promise<Pig> {
     const pig = await this.pigsService.findByCaravana(Number(nroCaravana));
     return pig
   }
 
-  // En el controller
-@Patch(':id')
-async updatePig(
-  @Param('id') pigId: string,
-  @Body() updatePigDto: Partial<CreatePigDto>
-): Promise<Pig> {
-  return this.pigsService.updatePig(pigId, updatePigDto);
-}
-
-
-
+  //editar cerdo (excepto pariciones)
+  @Patch(':id')
+  async updatePig(
+    @Param('id') pigId: string,
+    @Body() updatePigDto: Partial<CreatePigDto>
+  ): Promise<Pig> {
+    return this.pigsService.updatePig(pigId, updatePigDto);
+  }
+  //borrar cerdo
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<Pig> {
     const pig = await this.pigsService.remove(id);
@@ -56,15 +55,30 @@ async updatePig(
     return pig;
   }
 
-  @Patch(':id/paricion')
+  // 1️⃣ Agregar nueva parición
+  @Post(':id/pariciones')
   async addParicion(
-    @Param('id') id: string,
-    @Body() paricion: ParicionDto,
+    @Param('id') pigId: string,
+    @Body() paricionDto: ParicionDto
   ): Promise<Pig> {
-    const pig = await this.pigsService.addParicion(id, paricion);
-    if (!pig) throw new NotFoundException(`Pig with id ${id} not found`);
-    return pig;
+    return this.pigsService.addParicion(pigId, paricionDto);
   }
-
+// 2️⃣ Actualizar parición existente
+  @Patch(':id/pariciones/:paricionId')
+  async updateParicion(
+    @Param('id') pigId: string,
+    @Param('paricionId') paricionId: string,
+    @Body() updateData: Partial<ParicionDto>
+  ): Promise<Pig> {
+    return this.pigsService.updateParicion(pigId, paricionId, updateData);
+  }
+  // 3️⃣ Eliminar parición
+  @Delete(':id/pariciones/:paricionId')
+  async removeParicion(
+    @Param('id') pigId: string,
+    @Param('paricionId') paricionId: string
+  ): Promise<Pig> {
+    return this.pigsService.removeParicion(pigId, paricionId);
+  }
 
 }
