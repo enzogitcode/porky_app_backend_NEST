@@ -27,26 +27,31 @@ export class PigsController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Pig> {
-    const pig = await this.pigsService.findOne(id);
-    if (!pig) throw new NotFoundException(`Pig with id ${id} not found`);
-    return pig;
+  async findById(@Param('id') id: string): Promise<Pig> {
+    return await this.pigsService.findById(id);
   }
 
   @Get('caravana/:nroCaravana')
   async findByCaravana(@Param('nroCaravana') nroCaravana: string): Promise<Pig> {
     const pig = await this.pigsService.findByCaravana(Number(nroCaravana));
-    if (!pig) throw new NotFoundException(`Pig with caravana ${nroCaravana} not found`);
-    return pig;
+    return pig
   }
 
-  @Patch(':id')
-  async update(
-    @Param('id') id: string,
-    @Body() updateData: Partial<CreatePigDto>,
-  ): Promise<Pig> {
-    const pig = await this.pigsService.update(id, updateData);
+  // En el controller
+@Patch(':id')
+async updatePig(
+  @Param('id') pigId: string,
+  @Body() updatePigDto: Partial<CreatePigDto>
+): Promise<Pig> {
+  return this.pigsService.updatePig(pigId, updatePigDto);
+}
+
+
+  @Delete(':id')
+  async remove(@Param('id') id: string): Promise<Pig> {
+    const pig = await this.pigsService.remove(id);
     if (!pig) throw new NotFoundException(`Pig with id ${id} not found`);
+    
     return pig;
   }
 
@@ -60,11 +65,5 @@ export class PigsController {
     return pig;
   }
 
-  @Delete(':id')
-  async remove(@Param('id') id: string): Promise<Pig> {
-    const pig = await this.pigsService.remove(id);
-    if (!pig) throw new NotFoundException(`Pig with id ${id} not found`);
-    
-    return pig;
-  }
+
 }

@@ -18,6 +18,7 @@ export class Servicio {
 
 @Schema()
 export class Paricion {
+  
   @Prop({ type: Date })
   fechaParicion: Date;
 
