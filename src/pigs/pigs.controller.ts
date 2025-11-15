@@ -47,6 +47,7 @@ async updatePig(
 }
 
 
+
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<Pig> {
     const pig = await this.pigsService.remove(id);
