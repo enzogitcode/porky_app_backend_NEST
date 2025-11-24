@@ -6,14 +6,16 @@ export class ServicioDto {
   @IsEnum(['cerdo', 'inseminacion', 'desconocido'])
   tipo: 'cerdo' | 'inseminacion' | 'desconocido';
 
-  @IsDate()
-  @Type(() => Date)  // <--- convierte string a Date
-  fecha: Date;
+  // Si es inseminación o cerdo, la fecha es obligatoria
+  @ValidateIf(o => o.tipo === 'inseminacion' || o.tipo === 'cerdo')
+  @Type(() => Date)
+  @IsDate({ message: 'La fecha debe ser válida' })
+  fecha!: Date;
 
+  // Si es cerdo, macho es obligatorio
   @ValidateIf(o => o.tipo === 'cerdo')
-  @IsOptional()
-  @IsString()
-  macho?: string | null;
+  @IsString({ message: 'El macho debe ser un texto válido' })
+  macho!: string;
 }
 
 export class ParicionDto {

@@ -7,28 +7,27 @@ export type PigDocument = HydratedDocument<Pig>;
 @Schema()
 export class Servicio {
   @Prop({ enum: ['cerdo', 'inseminacion', 'desconocido'], required: true })
-  tipo: string;
+  tipo: 'cerdo' | 'inseminacion' | 'desconocido';
 
-  @Prop({ type: Date, required: true })
-  fecha: Date;
+  @Prop({ type: Date, required: false }) // fecha opcional
+  fecha?: Date;
 
-  @Prop()
+  @Prop({ required: false })
   macho?: string | null;
 }
 
 @Schema()
 export class Paricion {
-  
-  @Prop({ type: Date })
+  @Prop({ type: Date, required: true })
   fechaParicion: Date;
 
-  @Prop()
+  @Prop({ required: true })
   cantidadLechones: number;
 
-  @Prop()
+  @Prop({ required: false })
   descripcion?: string;
 
-  @Prop({ type: Servicio })
+  @Prop({ type: Servicio, required: false }) // servicio opcional
   servicio?: Servicio;
 
   @Prop({ type: Date, default: Date.now })
@@ -40,19 +39,17 @@ export class Pig {
   @Prop({ required: true })
   nroCaravana: number;
 
-  @Prop()
+  @Prop({ required: false })
   descripcion?: string;
 
-  @Prop({
-    required: true,
-  })
+  @Prop({ required: true })
   estadio: Situacion;
 
-  @Prop({ type: [Paricion], default: []})
+  @Prop({ type: [Paricion], default: [] })
   pariciones?: Paricion[];
 
-  @Prop()
-  ubicacion?:string
+  @Prop({ required: false })
+  ubicacion?: string;
 }
 
 export const PigSchema = SchemaFactory.createForClass(Pig);

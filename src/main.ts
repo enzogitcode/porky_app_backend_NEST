@@ -11,6 +11,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({
        transform: true,   // convierte JSON en instancias de DTO y tipos correctos
     whitelist: true,   // elimina campos extra que no estén en el DTO
+    
   }))
   
   //cors
