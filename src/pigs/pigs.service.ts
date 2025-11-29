@@ -38,7 +38,7 @@ async remove(id: string): Promise<Pig> {
 
 
   async findAll(): Promise<Pig[]> {
-    return this.pigModel.find().exec();
+    return this.pigModel.find().sort({updatedAt:-1}).exec();
   }
 
   async findById(id: string): Promise<Pig | null> {

@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer';
 import { IsDate, IsEnum, IsNumber, IsOptional, IsString, ValidateIf, ValidateNested } from 'class-validator';
 
-export type Situacion = 'pregnant' | 'parida con lechones' | 'servida'| 'enferma'| 'ninguno'
+export type Situacion = 'nulipara' | 'servida' | 'gestación confirmada'| 'parida con lechones'| 'destetada' | 'vacía'| 'descarte'
 export class ServicioDto {
   @IsEnum(['cerdo', 'inseminacion', 'desconocido'])
   tipo: 'cerdo' | 'inseminacion' | 'desconocido';
@@ -63,6 +63,12 @@ export class CreatePigDto {
   @ValidateNested({ each: true })
   @Type(() => ParicionDto)
   pariciones?: ParicionDto[];
+
+  @IsOptional()
+  @ValidateIf(o => o.estadio === 'enferma')
+  enfermedadActual?:string
+
+  
 
   @IsOptional()
   imageUrls?:string[]
