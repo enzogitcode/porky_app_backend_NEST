@@ -37,9 +37,25 @@ async remove(id: string): Promise<Pig> {
 }
 
 
-  async findAll(): Promise<Pig[]> {
-    return this.pigModel.find().sort({updatedAt:-1}).exec();
-  }
+  async findAll(page: number = 1, limit: number = 10): Promise<{data: Pig[], total: number, page: number, totalPages: number}> {
+  const skip = (page - 1) * limit;
+
+  const pigs = await this.pigModel
+    .find()
+    .sort({ updatedAt: -1 }) // 👉 mantiene el orden descendente
+    .skip(skip)              // 👉 salta los registros anteriores
+    .limit(limit)            // 👉 máximo 10 por consulta
+    .exec();
+
+  const total = await this.pigModel.countDocuments();
+
+  return {
+    data: pigs,
+    total,
+    page,
+    totalPages: Math.ceil(total / limit),
+  };
+}
 
   async findById(id: string): Promise<Pig | null> {
     const pig = await this.pigModel.findById(id).exec();

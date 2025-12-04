@@ -7,6 +7,7 @@ import {
   Patch,
   Delete,
   NotFoundException,
+  Query
 } from '@nestjs/common';
 import { PigsService } from './pigs.service';
 import { CreatePigDto, ParicionDto } from './dto/create-pig.dto';
@@ -23,9 +24,12 @@ export class PigsController {
   }
   //obtener todos los pigs
   @Get()
-  async findAll(): Promise<Pig[]> {
-    return this.pigsService.findAll();
-  }
+async getPigs(
+  @Query('page') page: number = 1,
+  @Query('limit') limit: number = 10,
+) {
+  return this.pigsService.findAll(Number(page), Number(limit));
+}
   //obtener un pig por id
   @Get(':id')
   async findById(@Param('id') id: string): Promise<Pig> {
