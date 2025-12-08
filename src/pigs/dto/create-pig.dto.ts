@@ -1,5 +1,6 @@
-import { Type } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 import { IsDate, IsEnum, IsNumber, IsOptional, IsString, ValidateIf, ValidateNested } from 'class-validator';
+import { IsValidEstadio } from './validators/customValidation';
 
 export enum Situacion {
   NULIPARA = 'nulipara',
@@ -84,6 +85,7 @@ export class CreatePigDto {
   nroCaravana!: number;
 
   @IsEnum(Situacion, { message: 'estadio no es válido' })
+  @IsValidEstadio({ message: 'Un cerdo con pariciones no puede ser nulípara' })
   estadio!: Situacion;
 
   @IsOptional()
@@ -104,4 +106,15 @@ export class CreatePigDto {
   @IsOptional()
   @IsString({ each: true })
   imageUrls?: string[];
+
+  @Expose()
+  get lechonesTotal(): number {
+    if (!this.pariciones || this.pariciones.length === 0) {
+      return 0;
+    }
+    return this.pariciones.reduce(
+      (acc, paricion) => acc + (paricion.cantidadLechones || 0),
+      0
+    );
+  }
 }

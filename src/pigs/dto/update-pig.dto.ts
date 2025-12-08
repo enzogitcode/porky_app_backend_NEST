@@ -1,8 +1,8 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreatePigDto, ParicionDto, Situacion } from './create-pig.dto';
-import { IsArray, IsDate, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsDate, IsString, ValidateNested, IsOptional, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
-
+import { IsValidEstadio } from './validators/customValidation';
 export class UpdatePigDto extends PartialType(CreatePigDto) {
   @IsString()
   descripcion?: string;
@@ -18,5 +18,10 @@ export class UpdatePigDto extends PartialType(CreatePigDto) {
   @Type(() => ParicionDto)
   pariciones?: ParicionDto[];
 
-  estadio?: Situacion
+  
+  @IsOptional()
+  @IsEnum(Situacion)
+  @IsValidEstadio({ message: 'Un cerdo con pariciones no puede ser nulípara' })
+  estadio?: Situacion;
+  
 }
