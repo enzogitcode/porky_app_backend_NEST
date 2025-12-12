@@ -1,5 +1,5 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { CreatePigDto, ParicionDto, Situacion } from './create-pig.dto';
+import { CreatePigDto, ParicionDto, RangoFechaDto, Situacion } from './create-pig.dto';
 import {
   IsArray,
   IsDate,
@@ -48,4 +48,9 @@ export class UpdatePigDto extends PartialType(CreatePigDto) {
   @IsValidEstadio({ message: 'Un cerdo con pariciones no puede ser nulípara' })
   estadio?: Situacion;
 
+  // Nuevo campo opcional para que el backend pueda actualizarlo
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => RangoFechaDto)
+  posibleFechaParto?: RangoFechaDto;
 }

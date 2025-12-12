@@ -70,15 +70,37 @@ async remove(id: string): Promise<Pig> {
   }
 
   // En el service
-async updatePig(pigId: string, updatePigDto: Partial<CreatePigDto>): Promise<Pig> {
-  const pig = await this.pigModel.findByIdAndUpdate(
-    pigId,
-    { $set: updatePigDto },
-    { new: true }
-  );
+async updatePig(pigId: string, updatePigDto: UpdatePigDto): Promise<Pig> {
+  const pig = await this.pigModel.findById(pigId);
   if (!pig) throw new NotFoundException(`No se encontró el cerdo con id ${pigId}`);
-  return pig;
+
+  // Convertir fechaServicioActual si viene
+  if (updatePigDto.fechaServicioActual) {
+    updatePigDto.fechaServicioActual = new Date(updatePigDto.fechaServicioActual);
+  }
+
+  // Recalcular posibleFechaParto si cambia fechaServicioActual o estadio
+  const estadio = updatePigDto.estadio ?? pig.estadio;
+  const fechaServicio = updatePigDto.fechaServicioActual ?? pig.fechaServicioActual;
+
+  if (fechaServicio && (estadio === 'servida' || estadio === 'gestación confirmada')) {
+    const inicio = new Date(fechaServicio);
+    const fin = new Date(fechaServicio);
+    inicio.setDate(inicio.getDate() + 111);
+    fin.setDate(fin.getDate() + 119);
+    updatePigDto.posibleFechaParto = { inicio, fin };
+  } else {
+    updatePigDto.posibleFechaParto = undefined;
+  }
+
+  // Actualizar el cerdo
+  Object.assign(pig, updatePigDto);
+  return pig.save();
 }
+
+
+
+
 
 //obtener cerdas servidas o en gestación
 
