@@ -80,6 +80,21 @@ async updatePig(pigId: string, updatePigDto: Partial<CreatePigDto>): Promise<Pig
   return pig;
 }
 
+//obtener cerdas servidas o en gestación
+
+async findServidasOGestacion(): Promise<Pig[]> {
+  return await this.pigModel.find({
+    estadio: { 
+      $in: [
+        'servida',
+        'gestación confirmada'
+      ]
+    }
+  })
+  .sort({ fechaServicioActual: 1 })
+  .exec();
+}
+
 
 
   // 1️⃣ Crear una nueva parición

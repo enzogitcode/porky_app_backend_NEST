@@ -1,5 +1,13 @@
 import { Expose, Type } from 'class-transformer';
-import { IsDate, IsEnum, IsNumber, IsOptional, IsString, ValidateIf, ValidateNested } from 'class-validator';
+import {
+  IsDate,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateIf,
+  ValidateNested,
+} from 'class-validator';
 import { IsValidEstadio } from './validators/customValidation';
 
 export enum Situacion {
@@ -32,7 +40,7 @@ export class ServicioDto {
   macho!: string;
 
   @ValidateIf(o => o.tipo === TipoServicio.INSEMINACION)
-  @IsString({ message: "El proveedor de dosis debe ser un string" })
+  @IsString({ message: 'El proveedor de dosis debe ser un string' })
   proveedorDosis!: string;
 }
 
@@ -60,7 +68,11 @@ export class ParicionDto {
 
   get fechaFormateada(): string {
     return this.fechaParicion
-      ? this.fechaParicion.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+      ? this.fechaParicion.toLocaleDateString('es-ES', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        })
       : '';
   }
 
@@ -68,6 +80,7 @@ export class ParicionDto {
   cantidadLechones!: number;
 
   @IsOptional()
+  @IsString()
   descripcion?: string;
 
   @IsOptional()
@@ -80,6 +93,16 @@ export class ParicionDto {
   fechaActualizacion?: Date;
 }
 
+export class RangoFechaDto {
+  @Type(() => Date)
+  @IsDate()
+  inicio!: Date;
+
+  @Type(() => Date)
+  @IsDate()
+  fin!: Date;
+}
+
 export class CreatePigDto {
   @IsNumber()
   nroCaravana!: number;
@@ -89,9 +112,11 @@ export class CreatePigDto {
   estadio!: Situacion;
 
   @IsOptional()
+  @IsString()
   descripcion?: string;
 
   @IsOptional()
+  @IsString()
   ubicacion?: string;
 
   @IsOptional()
@@ -101,11 +126,24 @@ export class CreatePigDto {
 
   @IsOptional()
   @ValidateIf(o => o.estadio === Situacion.DESCARTE)
+  @IsString()
   enfermedadActual?: string;
 
   @IsOptional()
   @IsString({ each: true })
   imageUrls?: string[];
+
+  @IsOptional()
+  @ValidateIf(o => o.estadio === Situacion.SERVIDA || o.estadio === Situacion.GESTACION_CONFIRMADA)
+  @Type(() => Date)
+  @IsDate()
+  fechaServicioActual?: Date;
+
+  @IsOptional()
+  @ValidateIf(o => o.estadio === Situacion.SERVIDA || o.estadio === Situacion.GESTACION_CONFIRMADA)
+  @ValidateNested()
+  @Type(() => RangoFechaDto)
+  posibleFechaParto?: RangoFechaDto;
 
   @Expose()
   get lechonesTotal(): number {
@@ -114,7 +152,7 @@ export class CreatePigDto {
     }
     return this.pariciones.reduce(
       (acc, paricion) => acc + (paricion.cantidadLechones || 0),
-      0
+      0,
     );
   }
 }

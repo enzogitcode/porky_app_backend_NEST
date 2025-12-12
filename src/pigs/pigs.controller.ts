@@ -30,6 +30,13 @@ async getPigs(
 ) {
   return this.pigsService.findAll(Number(page), Number(limit));
 }
+
+//obtener servidas o gestación
+@Get("servidas-gestacion")
+async findServidasOGestacion() {
+  return this.pigsService.findServidasOGestacion();
+}
+
   //obtener un pig por id
   @Get(':id')
   async findById(@Param('id') id: string): Promise<Pig> {
