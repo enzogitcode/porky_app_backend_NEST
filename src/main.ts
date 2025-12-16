@@ -13,12 +13,14 @@ async function bootstrap() {
     whitelist: true,   // elimina campos extra que no estén en el DTO
     
   }))
-  
+  const configService= app.get(ConfigService)
+  const localhost= configService.get<number>('LOCAL_HOST')
   //cors
-  app.enableCors()
+  app.enableCors({
+    origin:`http://localhost:${localhost}`
+  })
   
 //listen
-const configService= app.get(ConfigService)
 const port = configService.get<number>('PORT') ||3000
   await app.listen(port);
   console.log(`Escuchando en el puerto ${port}`)
