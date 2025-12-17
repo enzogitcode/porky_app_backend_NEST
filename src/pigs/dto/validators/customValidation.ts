@@ -25,11 +25,6 @@ export function SumNotExceed(property: string, validationOptions?: ValidationOpt
   };
 }
 
-export function lechonesTotalesParidos () {
-  
-}
-
-
 // Decorador custom
 export function IsValidEstadio(validationOptions?: ValidationOptions) {
   return function (object: Object, propertyName: string) {

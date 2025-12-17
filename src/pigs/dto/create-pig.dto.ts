@@ -1,5 +1,6 @@
 import { Expose, Type } from 'class-transformer';
 import {
+  IsMongoId,
   IsDate,
   IsEnum,
   IsNumber,
@@ -10,6 +11,14 @@ import {
 } from 'class-validator';
 import { IsValidEstadio } from './validators/customValidation';
 
+export class VacunaAplicadaDto {
+  @IsMongoId()
+  vacuna: string;
+
+  @Type(() => Date)
+  @IsDate()
+  fechaVacunacion: Date;
+}
 export enum Situacion {
   NULIPARA = 'nulipara',
   SERVIDA = 'servida',
@@ -43,24 +52,6 @@ export class ServicioDto {
   @IsString({ message: 'El proveedor de dosis debe ser un string' })
   proveedorDosis!: string;
 }
-
-export class VacunasDto {
-  @IsString()
-  nombre!: string;
-
-  @IsOptional()
-  @IsString()
-  proveedor?: string;
-
-  @IsOptional()
-  @IsString()
-  laboratorio?: string;
-
-  @Type(() => Date)
-  @IsDate()
-  fechaVacunacion!: Date;
-}
-
 export class ParicionDto {
   @IsDate()
   @Type(() => Date)
@@ -110,6 +101,10 @@ export class CreatePigDto {
   @IsEnum(Situacion, { message: 'estadio no es válido' })
   @IsValidEstadio({ message: 'Un cerdo con pariciones no puede ser nulípara' })
   estadio!: Situacion;
+
+  @ValidateNested({ each: true })
+  @Type(() => VacunaAplicadaDto)
+  vacunas?: VacunaAplicadaDto[];
 
   @IsOptional()
   @IsString()
