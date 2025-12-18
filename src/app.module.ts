@@ -4,6 +4,9 @@ import { AppService } from './app.service';
 import { PigsModule } from './pigs/pigs.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { UsersModule } from './users/users.module';
+import { VaccinesModule } from './vaccines/vaccines.module';
+import { VacunasModule } from './vacunas/vacunas.module';
 
 const envFile = process.env.NODE_ENV
   ? `.env.${process.env.NODE_ENV}.local`
@@ -30,7 +33,10 @@ const envFile = process.env.NODE_ENV
     isGlobal:true,
     envFilePath:process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}.local`:`.env.development.local`
   }),
-  PigsModule
+  PigsModule,
+  UsersModule,
+  VaccinesModule,
+  VacunasModule
   ],
   controllers: [AppController],
   providers: [AppService],
