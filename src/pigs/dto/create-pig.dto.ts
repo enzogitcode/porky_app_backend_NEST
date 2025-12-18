@@ -11,14 +11,7 @@ import {
 } from 'class-validator';
 import { IsValidEstadio } from './validators/customValidation';
 
-export class VacunaAplicadaDto {
-  @IsMongoId()
-  vacuna: string;
-
-  @Type(() => Date)
-  @IsDate()
-  fechaVacunacion: Date;
-}
+//enums
 export enum Situacion {
   NULIPARA = 'nulipara',
   SERVIDA = 'servida',
@@ -33,6 +26,16 @@ export enum TipoServicio {
   CERDO = 'cerdo',
   INSEMINACION = 'inseminacion',
   DESCONOCIDO = 'desconocido',
+}
+
+//DTOs
+export class VacunaAplicadaDto {
+  @IsMongoId()
+  vacuna: string;
+
+  @Type(() => Date)
+  @IsDate()
+  fechaVacunacion: Date;
 }
 
 export class ServicioDto {
@@ -106,6 +109,8 @@ export class CreatePigDto {
   @Type(() => VacunaAplicadaDto)
   vacunas?: VacunaAplicadaDto[];
 
+  
+
   @IsOptional()
   @IsString()
   descripcion?: string;
@@ -123,6 +128,8 @@ export class CreatePigDto {
   @ValidateIf(o => o.estadio === Situacion.DESCARTE)
   @IsString()
   enfermedadActual?: string;
+
+  
 
   @IsOptional()
   @IsString({ each: true })

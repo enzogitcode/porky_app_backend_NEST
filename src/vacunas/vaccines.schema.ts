@@ -16,6 +16,9 @@ export class Vacuna {
 
   @Prop()
   dosis?: string;
+
+  @Prop()
+  descripcion?:string
 }
 
 export const VacunaSchema = SchemaFactory.createForClass(Vacuna);
