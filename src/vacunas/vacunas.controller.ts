@@ -7,7 +7,7 @@ import { UpdateVacunaDto } from './dto/update-vacuna.dto';
 export class VacunasController {
   constructor(private readonly vacunasService: VacunasService) {}
 
-  @Post()
+  @Post('create')
   create(@Body() createVacunaDto: CreateVacunaDto) {
     return this.vacunasService.create(createVacunaDto);
   }
@@ -22,12 +22,12 @@ export class VacunasController {
     return this.vacunasService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Patch('update/:id')
   update(@Param('id') id: string, @Body() updateVacunaDto: UpdateVacunaDto) {
     return this.vacunasService.update(+id, updateVacunaDto);
   }
 
-  @Delete(':id')
+  @Delete('delete/:id')
   remove(@Param('id') id: string) {
     return this.vacunasService.remove(+id);
   }

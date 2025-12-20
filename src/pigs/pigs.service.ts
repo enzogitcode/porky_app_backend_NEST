@@ -2,7 +2,7 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Pig, PigDocument } from './schema/pigs.schema';
-import { Vacuna, VacunaDocument } from '../vacunas/vaccines.schema';
+import { Vacuna, VacunaDocument } from '../vacunas/schema/vacuna.schema';
 import { CreatePigDto, ParicionDto } from './dto/create-pig.dto';
 import { UpdatePigDto } from './dto/update-pig.dto';
 import { VacunaAplicadaDto } from './dto/create-pig.dto';
@@ -10,7 +10,6 @@ import { VacunaAplicadaDto } from './dto/create-pig.dto';
 export class PigsService {
   constructor(
     @InjectModel(Pig.name) private pigModel: Model<PigDocument>,
-    @InjectModel(Vacuna.name) private vacunaModel: Model<VacunaDocument>,
   ) {}
 
   // -------------------------------

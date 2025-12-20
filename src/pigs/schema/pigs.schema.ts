@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import type { Situacion } from '../dto/create-pig.dto';
-import { Vacuna } from '../../vacunas/vaccines.schema';
+import { Vacuna } from '../../vacunas/schema/vacuna.schema';
 import { Types } from 'mongoose';
 
 export type PigDocument = HydratedDocument<Pig>;
@@ -50,6 +50,9 @@ export class VacunaAplicada {
 
 @Schema({ timestamps: true })
 export class Pig {
+  @Prop({ type:[Vacuna], default: [] })
+  vacunasAplicadas?:VacunaAplicada[]
+
   @Prop({ type: Date, required: false })
   fechaServicioActual?: Date;
 
