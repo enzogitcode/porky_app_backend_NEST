@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { CreateVacunaDto } from './dto/create-vacuna.dto';
 import { UpdateVacunaDto } from './dto/update-vacuna.dto';
 import { Vacuna } from './schema/vacuna.schema';
@@ -11,6 +11,7 @@ export class VacunasService {
     @InjectModel(Vacuna.name)
     private readonly vacunaModel: Model<Vacuna>,
   ) {}
+
   async create(createVacunaDto: CreateVacunaDto):Promise<Vacuna> {
     const newVacuna = await this.vacunaModel.create({
       ...createVacunaDto
@@ -19,14 +20,16 @@ export class VacunasService {
       return await newVacuna.save()
     } catch (error) {
       console.log(error)
-      throw new Error
+      if (error.code === 11000) {
+              throw new BadRequestException('El nombre ya existe!');
+            }
+      throw Error
     }
   }
 
-  async findAll() {
+  async findAll():Promise<Vacuna[]> {
     const vacunas= await this.vacunaModel.find()
     try {
-      
       return vacunas
     } catch (error) {
       console.log(error)
@@ -34,15 +37,38 @@ export class VacunasService {
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} vacuna`;
+  async findOne(id:string) {
+    const vacuna= await this.vacunaModel.findById(id)
+    if (!vacuna) throw new NotFoundException(`No se encontraron vacunas con ese ${id}`)
+    try {
+      return vacuna
+    } catch (error) {
+      console.log(error)      
+      throw new Error
+    }
   }
 
-  update(id: number, updateVacunaDto: UpdateVacunaDto) {
-    return `This action updates a #${id} vacuna`;
+  async update(id: string, updateVacunaDto: UpdateVacunaDto):Promise<Vacuna> {
+    const vacunaUpdate = await this.vacunaModel.findByIdAndUpdate(id, updateVacunaDto)
+    if (!vacunaUpdate) throw new NotFoundException(`No se encontraron vacunas con ese ${id}`)
+    try {
+      vacunaUpdate.save()
+      return vacunaUpdate
+    } catch (error) {
+      console.log(error)
+      throw new Error
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} vacuna`;
+  async remove(id: string) {
+    const vacuna = await this.vacunaModel.findById(id)
+    if (!vacuna) throw new NotFoundException(`No se encontraron vacunas con ese ${id}`)
+    try {
+      await this.vacunaModel.findByIdAndDelete(vacuna._id)
+      return `Se eliminó la vacuna #${id} `;
+    } catch (error) {
+      console.log(error)
+      throw new Error
+    }
   }
 }
