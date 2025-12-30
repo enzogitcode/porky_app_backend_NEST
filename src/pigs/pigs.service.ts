@@ -69,7 +69,7 @@ export class PigsService {
   // Buscar cerdo por ID con vacunas pobladas
   // -------------------------------
   async findById(id: string): Promise<Pig> {
-    const pig = await this.pigModel.findById(id).populate('vacunas.vacuna');
+    const pig = await this.pigModel.findById(id).populate('vacunasAplicadas.vacuna');
     if (!pig) throw new NotFoundException(`No se encontraron cerdos con el id ${id}`);
     return pig;
   }

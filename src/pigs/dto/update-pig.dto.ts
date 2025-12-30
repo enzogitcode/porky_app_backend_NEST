@@ -11,14 +11,21 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { IsValidEstadio } from './validators/customValidation';
+import { VacunaAplicadaDto } from './create-pig.dto';
 
 export class UpdatePigDto extends PartialType(CreatePigDto) {
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => VacunaAplicadaDto)
+  vacunas?: VacunaAplicadaDto[];
+
+
   @IsOptional()
   @IsString()
   descripcion?: string;
 
   @IsOptional()
-  @ValidateIf(o => o.estadio === Situacion.DESCARTE)
+  @ValidateIf(o => o.estaEnferma === true || o.estadio === Situacion.DESCARTE)
   @IsString()
   enfermedadActual?: string;
 

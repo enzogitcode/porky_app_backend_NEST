@@ -63,10 +63,10 @@ export class ParicionDto {
   get fechaFormateada(): string {
     return this.fechaParicion
       ? this.fechaParicion.toLocaleDateString('es-ES', {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-        })
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      })
       : '';
   }
 
@@ -109,7 +109,7 @@ export class CreatePigDto {
   @Type(() => VacunaAplicadaDto)
   vacunas?: VacunaAplicadaDto[];
 
-  
+
 
   @IsOptional()
   @IsString()
@@ -125,11 +125,9 @@ export class CreatePigDto {
   pariciones?: ParicionDto[];
 
   @IsOptional()
-  @ValidateIf(o => o.estadio === Situacion.DESCARTE)
+  @ValidateIf(o => o.estaEnferma === true || o.estadio === Situacion.DESCARTE)
   @IsString()
   enfermedadActual?: string;
-
-  
 
   @IsOptional()
   @IsString({ each: true })
