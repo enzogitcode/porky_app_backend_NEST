@@ -39,7 +39,7 @@ export class Paricion {
   fechaActualizacion: Date;
 }
 
-@Schema({ timestamps: true })
+@Schema()
 export class VacunaAplicada {
   @Prop({ type: Types.ObjectId, ref: Vacuna.name, required: true })
   vacuna: Types.ObjectId;
@@ -50,8 +50,8 @@ export class VacunaAplicada {
 
 @Schema({ timestamps: true })
 export class Pig {
-  @Prop({ type:[Vacuna], default: [] })
-  vacunasAplicadas?:VacunaAplicada[]
+  @Prop({ type: [VacunaAplicada], default: [], required: false })
+  vacunasAplicadas: VacunaAplicada[];
 
   @Prop({ type: Date, required: false })
   fechaServicioActual?: Date;
@@ -75,7 +75,13 @@ export class Pig {
   ubicacion?: string;
 
   @Prop({ required: false })
+  estaEnferma?: boolean
+
+  @Prop({ required: false })
   enfermedadActual?: string;
+
+  @Prop({ required: false })
+  imageProfile?: string
 
   @Prop({ type: [String], required: false })
   imageUrls?: string[];

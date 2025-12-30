@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 import { CreateVacunaDto } from './dto/create-vacuna.dto';
 import { UpdateVacunaDto } from './dto/update-vacuna.dto';
 import { Vacuna } from './schema/vacuna.schema';
@@ -13,22 +13,20 @@ export class VacunasService {
   ) {}
 
   async create(createVacunaDto: CreateVacunaDto):Promise<Vacuna> {
-    const newVacuna = await this.vacunaModel.create({
-      ...createVacunaDto
-    })
     try {
-      return await newVacuna.save()
+      const newVacuna = new this.vacunaModel(createVacunaDto); 
+      return await newVacuna.save();
     } catch (error) {
       console.log(error)
       if (error.code === 11000) {
-              throw new BadRequestException('El nombre ya existe!');
+              throw new ConflictException('El nombre ya existe!');
             }
-      throw Error
+      throw new BadRequestException ('Error al crear la vacuna')
     }
   }
 
   async findAll():Promise<Vacuna[]> {
-    const vacunas= await this.vacunaModel.find()
+    const vacunas= await this.vacunaModel.find().exec()
     try {
       return vacunas
     } catch (error) {
@@ -37,8 +35,8 @@ export class VacunasService {
     }
   }
 
-  async findOne(id:string) {
-    const vacuna= await this.vacunaModel.findById(id)
+  async findOne(id:string):Promise<Vacuna> {
+    const vacuna= await this.vacunaModel.findById(id).exec()
     if (!vacuna) throw new NotFoundException(`No se encontraron vacunas con ese ${id}`)
     try {
       return vacuna
@@ -49,7 +47,7 @@ export class VacunasService {
   }
 
   async update(id: string, updateVacunaDto: UpdateVacunaDto):Promise<Vacuna> {
-    const vacunaUpdate = await this.vacunaModel.findByIdAndUpdate(id, updateVacunaDto)
+    const vacunaUpdate = await this.vacunaModel.findByIdAndUpdate(id, updateVacunaDto).exec()
     if (!vacunaUpdate) throw new NotFoundException(`No se encontraron vacunas con ese ${id}`)
     try {
       vacunaUpdate.save()

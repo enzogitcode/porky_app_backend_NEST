@@ -10,4 +10,10 @@ export class CreateVacunaDto {
 
     @IsString()
     laboratorio:string
+
+    @IsString()
+    descripcion:string
+    
+    @IsString()
+    proveedor:string
 }

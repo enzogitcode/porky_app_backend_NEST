@@ -34,6 +34,7 @@ import { VacunasModule } from './vacunas/vacunas.module';
     PigsModule,
     UsersModule,
     VacunasModule,
+    
   ],
   controllers: [AppController],
   providers: [AppService],
