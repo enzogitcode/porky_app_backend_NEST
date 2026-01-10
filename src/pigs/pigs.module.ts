@@ -12,7 +12,7 @@ import { VacunasModule } from 'src/vacunas/vacunas.module';
       schema: PigSchema
     },
   ]),
-VacunasModule],
+    VacunasModule],
 
   controllers: [PigsController],
   providers: [PigsService],
