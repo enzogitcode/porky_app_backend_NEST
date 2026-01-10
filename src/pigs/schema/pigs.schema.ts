@@ -39,7 +39,7 @@ export class Paricion {
   fechaActualizacion: Date;
 }
 
-@Schema()
+@Schema({timestamps: true})
 export class VacunaAplicada {
   @Prop({ type: Types.ObjectId, ref: Vacuna.name, required: true })
   vacuna: Types.ObjectId;

@@ -2,15 +2,18 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Pig, PigDocument } from './schema/pigs.schema';
-import { Vacuna, VacunaDocument } from '../vacunas/schema/vacuna.schema';
 import { CreatePigDto, ParicionDto } from './dto/create-pig.dto';
 import { UpdatePigDto } from './dto/update-pig.dto';
 import { VacunaAplicadaDto } from './dto/create-pig.dto';
+import { VacunasService } from 'src/vacunas/vacunas.service';
+
 @Injectable()
 export class PigsService {
   constructor(
     @InjectModel(Pig.name) private pigModel: Model<PigDocument>,
-  ) {}
+        private readonly vacunasService: VacunasService,
+
+  ) { }
 
   // -------------------------------
   // Crear un cerdo
@@ -48,7 +51,7 @@ export class PigsService {
   // -------------------------------
   // Listar cerdos con paginación
   // -------------------------------
-  async findAll(page: number = 1, limit: number = 10): Promise<{data: Pig[], total: number, page: number, totalPages: number}> {
+  async findAll(page: number = 1, limit: number = 10): Promise<{ data: Pig[], total: number, page: number, totalPages: number }> {
     const skip = (page - 1) * limit;
     const pigs = await this.pigModel
       .find()
@@ -118,8 +121,8 @@ export class PigsService {
     return await this.pigModel.find({
       estadio: { $in: ['servida', 'gestación confirmada'] },
     })
-    .sort({ fechaServicioActual: 1 })
-    .exec();
+      .sort({ fechaServicioActual: 1 })
+      .exec();
   }
 
   // -------------------------------
@@ -160,19 +163,27 @@ export class PigsService {
   // -------------------------------
 
   async addVacuna(pigId: string, data: VacunaAplicadaDto): Promise<Pig> {
-    const pig = await this.pigModel.findByIdAndUpdate(
-      pigId,
-      {
-        $push: {
-          vacunas: {
-            vacuna: new Types.ObjectId(data.vacuna),
-            fechaVacunacion: new Date(data.fechaVacunacion),
+    // valida la vacuna usando SU propio CRUD
+    await this.vacunasService.findVacunaById(data.vacuna);
+    const pig = await this.pigModel
+      .findByIdAndUpdate(
+        pigId,
+        {
+          $push: {
+            vacunas: {
+              vacuna: new Types.ObjectId(data.vacuna),
+              fechaVacunacion: new Date(data.fechaVacunacion),
+            },
           },
         },
-      },
-      { new: true },
-    ).populate('vacunas.vacuna');
-    if (!pig) throw new NotFoundException(`No se encontró el cerdo con id ${pigId}`);
+        { new: true },
+      )
+      .populate('vacunas.vacuna');
+
+    if (!pig) {
+      throw new NotFoundException(`No se encontró el cerdo con id ${pigId}`);
+    }
+
     return pig;
   }
 

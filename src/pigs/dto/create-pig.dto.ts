@@ -8,6 +8,7 @@ import {
   IsString,
   ValidateIf,
   ValidateNested,
+  IsBoolean,
 } from 'class-validator';
 import { IsValidEstadio } from './validators/customValidation';
 
@@ -39,7 +40,7 @@ export class VacunaAplicadaDto {
 }
 
 export class ServicioDto {
-  @IsEnum(TipoServicio)
+    @IsEnum(TipoServicio)
   tipo!: TipoServicio;
 
   @ValidateIf(o => o.tipo === TipoServicio.INSEMINACION || o.tipo === TipoServicio.CERDO)
@@ -101,6 +102,12 @@ export class CreatePigDto {
   @IsNumber()
   nroCaravana!: number;
 
+  @IsBoolean()
+  fallecido:boolean
+
+  @IsDate()
+  fechaFallecido:Date
+
   @IsEnum(Situacion, { message: 'estadio no es válido' })
   @IsValidEstadio({ message: 'Un cerdo con pariciones no puede ser nulípara' })
   estadio!: Situacion;
@@ -108,8 +115,6 @@ export class CreatePigDto {
   @ValidateNested({ each: true })
   @Type(() => VacunaAplicadaDto)
   vacunas?: VacunaAplicadaDto[];
-
-
 
   @IsOptional()
   @IsString()

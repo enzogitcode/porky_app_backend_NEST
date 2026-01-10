@@ -35,7 +35,7 @@ export class VacunasService {
     }
   }
 
-  async findOne(id:string):Promise<Vacuna> {
+  async findVacunaById(id:string):Promise<Vacuna> {
     const vacuna= await this.vacunaModel.findById(id).exec()
     if (!vacuna) throw new NotFoundException(`No se encontraron vacunas con ese ${id}`)
     try {

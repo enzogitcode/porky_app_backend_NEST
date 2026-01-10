@@ -12,5 +12,6 @@ import { Vacuna, VacunaSchema } from './schema/vacuna.schema';
   ],
   controllers: [VacunasController],
   providers: [VacunasService],
+  exports:[VacunasService]
 })
 export class VacunasModule {}

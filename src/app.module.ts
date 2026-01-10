@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { PigsModule } from './pigs/pigs.module';
 import { UsersModule } from './users/users.module';
 import { VacunasModule } from './vacunas/vacunas.module';
+import { ParicionesModule } from './pariciones/pariciones.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { VacunasModule } from './vacunas/vacunas.module';
     PigsModule,
     UsersModule,
     VacunasModule,
+    ParicionesModule,
     
   ],
   controllers: [AppController],

@@ -8,6 +8,7 @@ import {
   IsOptional,
   IsEnum,
   ValidateIf,
+  IsBoolean
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { IsValidEstadio } from './validators/customValidation';
@@ -18,7 +19,6 @@ export class UpdatePigDto extends PartialType(CreatePigDto) {
   @ValidateNested({ each: true })
   @Type(() => VacunaAplicadaDto)
   vacunas?: VacunaAplicadaDto[];
-
 
   @IsOptional()
   @IsString()
@@ -40,6 +40,7 @@ export class UpdatePigDto extends PartialType(CreatePigDto) {
   ubicacion?: string;
 
   @IsOptional()
+  @ValidateIf(o => o.fallecido === true)
   @Type(() => Date)
   @IsDate()
   fechaFallecimiento?: Date;
