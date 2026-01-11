@@ -162,38 +162,42 @@ export class PigsService {
   // Vacunas
   // -------------------------------
 
-  async addVacuna(pigId: string, data: VacunaAplicadaDto): Promise<Pig> {
-    // valida la vacuna usando SU propio CRUD
-    await this.vacunasService.findVacunaById(data.vacuna);
-    const pig = await this.pigModel
-      .findByIdAndUpdate(
-        pigId,
-        {
-          $push: {
-            vacunas: {
-              vacuna: new Types.ObjectId(data.vacuna),
-              fechaVacunacion: new Date(data.fechaVacunacion),
-            },
-          },
+async addVacuna(pigId: string, data: VacunaAplicadaDto): Promise<Pig> {
+  // solo validás que exista
+  await this.vacunasService.findVacunaById(data.vacuna);
+
+  const pig = await this.pigModel.findByIdAndUpdate(
+    pigId,
+    {
+      $push: {
+        vacunasAplicadas: {
+          vacuna: new Types.ObjectId(data.vacuna),
+          fechaVacunacion: new Date(data.fechaVacunacion),
         },
-        { new: true },
-      )
-      .populate('vacunas.vacuna');
+      },
+    },
+    { new: true },
+  );
 
-    if (!pig) {
-      throw new NotFoundException(`No se encontró el cerdo con id ${pigId}`);
-    }
-
-    return pig;
+  if (!pig) {
+    throw new NotFoundException(`No se encontró el cerdo con id ${pigId}`);
   }
 
-  async removeVacuna(pigId: string, aplicacionId: string): Promise<Pig> {
-    const pig = await this.pigModel.findByIdAndUpdate(
-      pigId,
-      { $pull: { vacunas: { _id: aplicacionId } } },
-      { new: true },
-    ).populate('vacunas.vacuna');
-    if (!pig) throw new NotFoundException(`No se encontró el cerdo con id ${pigId}`);
-    return pig;
+  return pig;
+}
+
+  async removeVacuna(pigId: string, vacunaAplicadaId: string): Promise<Pig> {
+  const pig = await this.pigModel.findByIdAndUpdate(
+    pigId,
+    { $pull: { vacunasAplicadas: { _id: vacunaAplicadaId } } },
+    { new: true },
+  );
+
+  if (!pig) {
+    throw new NotFoundException(`No se encontró el cerdo con id ${pigId}`);
   }
+
+  return pig;
+}
+
 }

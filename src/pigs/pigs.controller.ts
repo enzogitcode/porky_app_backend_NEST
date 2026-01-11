@@ -15,7 +15,7 @@ import { Pig } from './schema/pigs.schema';
 
 @Controller('pigs')
 export class PigsController {
-  constructor(private readonly pigsService: PigsService) {}
+  constructor(private readonly pigsService: PigsService) { }
 
   //crear pig
   @Post()
@@ -24,18 +24,18 @@ export class PigsController {
   }
   //obtener todos los pigs
   @Get()
-async getPigs(
-  @Query('page') page: number = 1,
-  @Query('limit') limit: number = 10,
-) {
-  return this.pigsService.findAll(Number(page), Number(limit));
-}
+  async getPigs(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ) {
+    return this.pigsService.findAll(Number(page), Number(limit));
+  }
 
-//obtener servidas o gestación
-@Get("servidas-gestacion")
-async findServidasOGestacion() {
-  return this.pigsService.findServidasOGestacion();
-}
+  //obtener servidas o gestación
+  @Get("servidas-gestacion")
+  async findServidasOGestacion() {
+    return this.pigsService.findServidasOGestacion();
+  }
 
   //obtener un pig por id
   @Get(':id')
@@ -62,7 +62,7 @@ async findServidasOGestacion() {
   async remove(@Param('id') id: string): Promise<Pig> {
     const pig = await this.pigsService.remove(id);
     if (!pig) throw new NotFoundException(`Pig with id ${id} not found`);
-    
+
     return pig;
   }
 
@@ -74,7 +74,7 @@ async findServidasOGestacion() {
   ): Promise<Pig> {
     return this.pigsService.addParicion(pigId, paricionDto);
   }
-// 2️⃣ Actualizar parición existente
+  // 2️⃣ Actualizar parición existente
   @Patch(':id/pariciones/:paricionId')
   async updateParicion(
     @Param('id') pigId: string,
@@ -90,6 +90,27 @@ async findServidasOGestacion() {
     @Param('paricionId') paricionId: string
   ): Promise<Pig> {
     return this.pigsService.removeParicion(pigId, paricionId);
+  }
+
+
+  //Vacunas
+  @Patch(':id/addvacuna/:vacunaId')
+  async addVacuna(
+    @Param('id') pigId: string,
+    @Param('vacunaId') vacunaId: string,
+    @Body() body: { fechaVacunacion: Date }
+  ): Promise<Pig> {
+    return this.pigsService.addVacuna(pigId, {
+      vacuna: vacunaId,
+      fechaVacunacion: body.fechaVacunacion,
+    });
+  }
+  @Patch(':id/removevacuna/:vacunaId')
+  async removeVacuna(
+    @Param('id') pigId: string,
+    @Param('vacunaId') vacunaId: string
+  ): Promise<Pig> {
+    return this.pigsService.removeVacuna(pigId, vacunaId);
   }
 
 }
