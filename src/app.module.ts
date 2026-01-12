@@ -7,7 +7,6 @@ import { AppService } from './app.service';
 import { PigsModule } from './pigs/pigs.module';
 import { UsersModule } from './users/users.module';
 import { VacunasModule } from './vacunas/vacunas.module';
-import { ParicionesModule } from './pariciones/pariciones.module';
 
 @Module({
   imports: [
@@ -27,6 +26,7 @@ import { ParicionesModule } from './pariciones/pariciones.module';
         if (!uri) {
           throw new Error('MONGO_URL no está definido en tu archivo de entorno!');
         }
+        console.log(`Mongo uri: ${uri}`)
         return { uri };
       },
     }),
@@ -35,7 +35,6 @@ import { ParicionesModule } from './pariciones/pariciones.module';
     PigsModule,
     UsersModule,
     VacunasModule,
-    ParicionesModule,
     
   ],
   controllers: [AppController],

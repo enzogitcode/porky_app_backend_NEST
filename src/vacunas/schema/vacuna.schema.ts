@@ -5,7 +5,7 @@ export type VacunaDocument = HydratedDocument<Vacuna>
 
 @Schema({ timestamps: true })
 export class Vacuna {
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true})
   nombre: string;
 
   @Prop()

@@ -2,18 +2,16 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Pig, PigDocument } from './schema/pigs.schema';
-import { CreatePigDto, ParicionDto } from './dto/create-pig.dto';
+import { CreatePigDto, ParicionDto, VacunaAplicadaDto } from './dto/create-pig.dto';
 import { UpdatePigDto } from './dto/update-pig.dto';
-import { VacunaAplicadaDto } from './dto/create-pig.dto';
 import { VacunasService } from 'src/vacunas/vacunas.service';
 
 @Injectable()
 export class PigsService {
   constructor(
     @InjectModel(Pig.name) private pigModel: Model<PigDocument>,
-        private readonly vacunasService: VacunasService,
-
-  ) { }
+    private readonly vacunasService: VacunasService,
+  ) {}
 
   // -------------------------------
   // Crear un cerdo
@@ -21,21 +19,14 @@ export class PigsService {
   async create(createPigDto: CreatePigDto): Promise<Pig> {
     const pig = new this.pigModel({
       ...createPigDto,
-      pariciones: createPigDto.pariciones?.map(p => ({
-        ...p,
-        fechaParicion: new Date(p.fechaParicion),
-        fechaActualizacion: new Date(),
-        servicio: p.servicio
-          ? { ...p.servicio, fecha: new Date(p.servicio.fecha) }
-          : undefined,
-      })) || [],
-    });
+    })
 
     try {
-      return await pig.save();
-    } catch (err) {
+      return await pig.save()
+    } catch (err: any) {
+      // Código 11000 = duplicado en índice único
       if (err.code === 11000) {
-        throw new BadRequestException('La caravana ya existe');
+        throw new BadRequestException('Error: Ya existe un cerdo con ese número de caravana.');
       }
       throw err;
     }
@@ -45,20 +36,17 @@ export class PigsService {
   // Eliminar un cerdo
   // -------------------------------
   async remove(id: string): Promise<Pig> {
-    return this.pigModel.findByIdAndDelete(id).exec();
+    const pig = await this.pigModel.findByIdAndDelete(id);
+    if (!pig) throw new NotFoundException(`No se encontró el cerdo con id ${id}`);
+    return pig;
   }
 
   // -------------------------------
   // Listar cerdos con paginación
   // -------------------------------
-  async findAll(page: number = 1, limit: number = 10): Promise<{ data: Pig[], total: number, page: number, totalPages: number }> {
+  async findAll(page = 1, limit = 10) {
     const skip = (page - 1) * limit;
-    const pigs = await this.pigModel
-      .find()
-      .sort({ updatedAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .exec();
+    const pigs = await this.pigModel.find().sort({ updatedAt: -1 }).skip(skip).limit(limit).exec();
     const total = await this.pigModel.countDocuments();
     return {
       data: pigs,
@@ -73,7 +61,7 @@ export class PigsService {
   // -------------------------------
   async findById(id: string): Promise<Pig> {
     const pig = await this.pigModel.findById(id).populate('vacunasAplicadas.vacuna');
-    if (!pig) throw new NotFoundException(`No se encontraron cerdos con el id ${id}`);
+    if (!pig) throw new NotFoundException(`No se encontró el cerdo con id ${id}`);
     return pig;
   }
 
@@ -81,8 +69,8 @@ export class PigsService {
   // Buscar cerdo por caravana
   // -------------------------------
   async findByCaravana(nroCaravana: number): Promise<Pig> {
-    const pig = await this.pigModel.findOne({ nroCaravana }).populate('vacunas.vacuna');
-    if (!pig) throw new NotFoundException(`No se encontraron cerdos con la caravana número ${nroCaravana}`);
+    const pig = await this.pigModel.findOne({ nroCaravana }).populate('vacunasAplicadas.vacuna');
+    if (!pig) throw new NotFoundException(`No se encontró el cerdo con la caravana ${nroCaravana}`);
     return pig;
   }
 
@@ -93,14 +81,15 @@ export class PigsService {
     const pig = await this.pigModel.findById(pigId);
     if (!pig) throw new NotFoundException(`No se encontró el cerdo con id ${pigId}`);
 
+    // Convertir fechaServicioActual a Date si existe
     if (updatePigDto.fechaServicioActual) {
       updatePigDto.fechaServicioActual = new Date(updatePigDto.fechaServicioActual);
     }
 
+    // Calcular posible fecha de parto
     const estadio = updatePigDto.estadio ?? pig.estadio;
     const fechaServicio = updatePigDto.fechaServicioActual ?? pig.fechaServicioActual;
-
-    if (fechaServicio && (estadio === 'servida' || estadio === 'gestación confirmada')) {
+    if (fechaServicio && ['servida', 'gestación confirmada'].includes(estadio)) {
       const inicio = new Date(fechaServicio);
       const fin = new Date(fechaServicio);
       inicio.setDate(inicio.getDate() + 111);
@@ -118,11 +107,9 @@ export class PigsService {
   // Buscar cerdas servidas o en gestación
   // -------------------------------
   async findServidasOGestacion(): Promise<Pig[]> {
-    return await this.pigModel.find({
+    return this.pigModel.find({
       estadio: { $in: ['servida', 'gestación confirmada'] },
-    })
-      .sort({ fechaServicioActual: 1 })
-      .exec();
+    }).sort({ fechaServicioActual: 1 }).exec();
   }
 
   // -------------------------------
@@ -161,43 +148,53 @@ export class PigsService {
   // -------------------------------
   // Vacunas
   // -------------------------------
+  async addVacuna(pigId: string, data: VacunaAplicadaDto): Promise<Pig> {
+    await this.vacunasService.findVacunaById(data.vacuna);
 
-async addVacuna(pigId: string, data: VacunaAplicadaDto): Promise<Pig> {
-  // solo validás que exista
-  await this.vacunasService.findVacunaById(data.vacuna);
-
-  const pig = await this.pigModel.findByIdAndUpdate(
-    pigId,
-    {
-      $push: {
-        vacunasAplicadas: {
-          vacuna: new Types.ObjectId(data.vacuna),
-          fechaVacunacion: new Date(data.fechaVacunacion),
+    const pig = await this.pigModel.findByIdAndUpdate(
+      pigId,
+      {
+        $push: {
+          vacunasAplicadas: {
+            vacuna: new Types.ObjectId(data.vacuna),
+            fechaVacunacion: new Date(data.fechaVacunacion),
+          },
         },
       },
-    },
-    { new: true },
-  );
-
-  if (!pig) {
-    throw new NotFoundException(`No se encontró el cerdo con id ${pigId}`);
+      { new: true },
+    );
+    if (!pig) throw new NotFoundException(`No se encontró el cerdo con id ${pigId}`);
+    return pig;
   }
-
-  return pig;
-}
 
   async removeVacuna(pigId: string, vacunaAplicadaId: string): Promise<Pig> {
-  const pig = await this.pigModel.findByIdAndUpdate(
-    pigId,
-    { $pull: { vacunasAplicadas: { _id: vacunaAplicadaId } } },
-    { new: true },
-  );
-
-  if (!pig) {
-    throw new NotFoundException(`No se encontró el cerdo con id ${pigId}`);
+    const pig = await this.pigModel.findByIdAndUpdate(
+      pigId,
+      { $pull: { vacunasAplicadas: { _id: vacunaAplicadaId } } },
+      { new: true },
+    );
+    if (!pig) throw new NotFoundException(`No se encontró el cerdo con id ${pigId}`);
+    return pig;
   }
 
-  return pig;
-}
+  // -------------------------------
+  // Revisar índices (para debug)
+  // -------------------------------
+  async revisarIndices() {
+    const indexes = await this.pigModel.collection.indexes();
+    console.log('Índices actuales:', indexes);
+    return indexes;
+  }
 
+  // -------------------------------
+  // Eliminar índice único (para desarrollo si da error 11000)
+  // -------------------------------
+  async eliminarIndice(nombreIndice: string) {
+    try {
+      await this.pigModel.collection.dropIndex(nombreIndice);
+      console.log(`Índice '${nombreIndice}' eliminado correctamente.`);
+    } catch (err) {
+      console.error(`Error eliminando índice '${nombreIndice}':`, err.message);
+    }
+  }
 }

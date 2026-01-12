@@ -15,7 +15,6 @@ import { IsValidEstadio } from './validators/customValidation';
 import { VacunaAplicadaDto } from './create-pig.dto';
 
 export class UpdatePigDto extends PartialType(CreatePigDto) {
-  @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => VacunaAplicadaDto)
   vacunas?: VacunaAplicadaDto[];

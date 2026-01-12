@@ -9,8 +9,8 @@ export class DatabaseService {
   constructor(private configService: ConfigService) {
     // Obtenemos la URL de Mongo desde ConfigService
     const mongoUrl = this.configService.get<string>('Mongo_URL');
-
     this.client = new MongoClient(mongoUrl);
+    console.log(`MongoDB URL: ${mongoUrl}`);
   }
 
   async connect() {

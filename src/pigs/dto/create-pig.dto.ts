@@ -21,6 +21,7 @@ export enum Situacion {
   DESTETADA = 'destetada',
   VACIA = 'vacía',
   DESCARTE = 'descarte',
+  FALLECIDO = 'fallecido',
 }
 
 export enum TipoServicio {
@@ -40,7 +41,7 @@ export class VacunaAplicadaDto {
 }
 
 export class ServicioDto {
-    @IsEnum(TipoServicio)
+  @IsEnum(TipoServicio)
   tipo!: TipoServicio;
 
   @ValidateIf(o => o.tipo === TipoServicio.INSEMINACION || o.tipo === TipoServicio.CERDO)
@@ -99,18 +100,19 @@ export class RangoFechaDto {
 }
 
 export class CreatePigDto {
+
   @IsNumber()
   nroCaravana!: number;
-
-  @IsBoolean()
-  fallecido:boolean
-
-  @IsDate()
-  fechaFallecido:Date
 
   @IsEnum(Situacion, { message: 'estadio no es válido' })
   @IsValidEstadio({ message: 'Un cerdo con pariciones no puede ser nulípara' })
   estadio!: Situacion;
+
+  @IsOptional()
+  @ValidateIf(o => o.estadio === Situacion.FALLECIDO)
+  @Type(() => Date)
+  @IsDate({ message: 'fechaFallecido debe ser una fecha válida' })
+  fechaFallecido?: Date;
 
   @ValidateNested({ each: true })
   @Type(() => VacunaAplicadaDto)

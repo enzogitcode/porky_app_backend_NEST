@@ -7,7 +7,9 @@ import {
   Patch,
   Delete,
   NotFoundException,
-  Query
+  Query,
+  HttpStatus,
+  HttpCode
 } from '@nestjs/common';
 import { PigsService } from './pigs.service';
 import { CreatePigDto, ParicionDto } from './dto/create-pig.dto';
@@ -19,6 +21,7 @@ export class PigsController {
 
   //crear pig
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   async create(@Body() createPigDto: CreatePigDto): Promise<Pig> {
     return this.pigsService.create(createPigDto);
   }
