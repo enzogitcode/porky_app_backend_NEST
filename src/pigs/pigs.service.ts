@@ -22,7 +22,7 @@ export class PigsService {
     })
 
     try {
-      return await pig.save()
+      return await pig.save();
     } catch (err: any) {
       // Código 11000 = duplicado en índice único
       if (err.code === 11000) {
@@ -181,9 +181,26 @@ export class PigsService {
   // Revisar índices (para debug)
   // -------------------------------
   async revisarIndices() {
-    const indexes = await this.pigModel.collection.indexes();
-    console.log('Índices actuales:', indexes);
-    return indexes;
+    try {
+      const indexes = await this.pigModel.collection.indexes();
+      console.log('Índices actuales:', indexes);
+      return indexes;
+    } catch (err: any) {
+      // Si la colección no existe, intentar crearla para evitar el error
+      if (err?.message?.includes('ns not found')) {
+        console.warn('Colección de cerdos no encontrada. Intentando crear la colección...');
+        try {
+          await this.pigModel.createCollection();
+          const indexes = await this.pigModel.collection.indexes();
+          console.log('Colección creada. Índices:', indexes);
+          return indexes;
+        } catch (e: any) {
+          console.error('Error creando la colección de cerdos:', e.message);
+          return [];
+        }
+      }
+      throw err;
+    }
   }
 
   // -------------------------------
@@ -193,8 +210,58 @@ export class PigsService {
     try {
       await this.pigModel.collection.dropIndex(nombreIndice);
       console.log(`Índice '${nombreIndice}' eliminado correctamente.`);
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.message?.includes('ns not found')) {
+        console.error(`No se pudo eliminar índice: la colección no existe (${err.message}).`);
+        return;
+      }
       console.error(`Error eliminando índice '${nombreIndice}':`, err.message);
+    }
+  }
+
+  // -------------------------------
+  // Duplicados: listar y limpiar
+  // -------------------------------
+  async findDuplicates() {
+    // Agrupación por nroCaravana con más de 1 ocurrencia
+    const pipeline = [
+      { $group: { _id: '$nroCaravana', count: { $sum: 1 }, ids: { $push: '$_id' } } },
+      { $match: { _id: { $ne: null }, count: { $gt: 1 } } },
+      { $project: { nroCaravana: '$_id', count: 1, ids: 1, _id: 0 } },
+    ];
+    return this.pigModel.aggregate(pipeline).exec();
+  }
+
+  async listDuplicateDocs(nroCaravana: number) {
+    return this.pigModel.find({ nroCaravana }).sort({ createdAt: 1 }).exec();
+  }
+
+  async previewDuplicates(nroCaravana: number) {
+    const docs = await this.pigModel.find({ nroCaravana }).sort({ createdAt: 1 }).lean().exec();
+    if (!docs || docs.length === 0) return { nroCaravana, count: 0, keep: null, toRemove: [], docs: [] };
+    if (docs.length === 1) return { nroCaravana, count: 1, keep: docs[0]._id, toRemove: [], docs };
+
+    const keep = docs[0]._id;
+    const toRemove = docs.slice(1).map(d => d._id);
+    return { nroCaravana, count: docs.length, keep, toRemove, docs };
+  }
+
+  async removeDuplicatesKeepOne(nroCaravana: number) {
+    const docs = await this.pigModel.find({ nroCaravana }).sort({ createdAt: 1 }).exec();
+    if (!docs || docs.length <= 1) return { removed: 0 };
+
+    // Mantener el primer documento (más antiguo) y eliminar el resto
+    const toRemove = docs.slice(1).map(d => d._id);
+    const res = await this.pigModel.deleteMany({ _id: { $in: toRemove } });
+    return { removed: res.deletedCount || 0 };
+  }
+
+  async createUniqueIndexNroCaravana() {
+    try {
+      await this.pigModel.collection.createIndex({ nroCaravana: 1 }, { unique: true, name: 'nroCaravana_1' });
+      return { ok: true };
+    } catch (err: any) {
+      return { ok: false, message: err.message };
     }
   }
 }
