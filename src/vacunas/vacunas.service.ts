@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException, HttpStatus } from '@nestjs/common';
 import { CreateVacunaDto } from './dto/create-vacuna.dto';
 import { UpdateVacunaDto } from './dto/update-vacuna.dto';
 import { Vacuna } from './schema/vacuna.schema';
@@ -63,7 +63,8 @@ export class VacunasService {
     if (!vacuna) throw new NotFoundException(`No se encontraron vacunas con ese ${id}`)
     try {
       await this.vacunaModel.findByIdAndDelete(vacuna._id)
-      return `Se eliminó la vacuna #${id} `;
+      return { status: HttpStatus.OK, message: 'Vacuna eliminada correctamente' }
+      
     } catch (error) {
       console.log(error)
       throw new Error
