@@ -1,6 +1,6 @@
 import { Role } from "../common/enums/roles.enums"
 export class User {
-    name:string
+    username:string
     role:Role
     pin:string
 }

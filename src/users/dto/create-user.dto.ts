@@ -2,7 +2,7 @@ import { IsString, Matches, IsEnum, IsOptional } from 'class-validator';
 import { Role } from '../common/enums/roles.enums';
 export class CreateUserDto {
   @IsString()
-  name: string;
+  username: string;
 
   @IsString()
   @Matches(/^\d{4}$/, {

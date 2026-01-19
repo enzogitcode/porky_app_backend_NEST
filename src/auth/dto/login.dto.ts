@@ -3,7 +3,7 @@ import { IsString, Matches } from 'class-validator';
 
 export class LoginDto {
   @IsString()
-  name: string;
+  username: string;
 
   @IsString()
   @Matches(/^\d{4}$/, {

@@ -25,8 +25,8 @@ export class UsersController {
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(Role.ADMIN)
   @Post()
-  async create(@Body() body: { name: string; pin: string; role?: Role }) {
-    return this.usersService.create(body.name, body.pin, body.role);
+  async create(@Body() body: { username: string; pin: string; role?: Role }) {
+    return this.usersService.create(body.username, body.pin, body.role);
   }
 
   /**
@@ -54,9 +54,9 @@ export class UsersController {
    */
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(Role.ADMIN)
-  @Post(':name/reset-pin')
-  async resetPin(@Param('name') name: string) {
-    return this.usersService.resetPinByName(name);
+  @Post(':username/reset-pin')
+  async resetPin(@Param('username') username: string) {
+    return this.usersService.resetPinByUsername(username);
   }
 
   /**

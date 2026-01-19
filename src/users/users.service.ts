@@ -13,30 +13,29 @@ export class UsersService {
   ) {}
 
   /**
- * Listar todos los usuarios (solo admin)
- */
-async findAll() {
-  return this.userModel
-    .find()
-    .select('name role createdAt'); // solo devuelve campos públicos
-}
-
+   * Listar todos los usuarios (solo admin)
+   */
+  async findAll() {
+    return this.userModel
+      .find()
+      .select('username role createdAt'); // solo devuelve campos públicos
+  }
 
   /**
-   * 🔍 Buscar usuario por nombre (login)
+   * 🔍 Buscar usuario por username (login)
    */
-  findByName(name: string) {
-    return this.userModel.findOne({ name });
+  findByUsername(username: string) {
+    return this.userModel.findOne({ username });
   }
 
   /**
    * 👑 Seed automático del admin (solo una vez)
    */
   async createAdminIfNotExists() {
-    const adminName = process.env.ADMIN_NAME || 'admin';
+    const adminUsername = process.env.ADMIN_USERNAME || 'admin';
     const adminPin = process.env.ADMIN_PIN || '1234';
 
-    const exists = await this.userModel.findOne({ name: adminName });
+    const exists = await this.userModel.findOne({ username: adminUsername });
     if (exists) {
       return;
     }
@@ -44,21 +43,21 @@ async findAll() {
     const hashedPin = await bcrypt.hash(adminPin, 10);
 
     await this.userModel.create({
-      name: adminName,
+      username: adminUsername,
       pin: hashedPin,
       role: Role.ADMIN,
     });
 
-    console.log(`✅ Admin creado automáticamente: ${adminName}`);
+    console.log(`✅ Admin creado automáticamente: ${adminUsername}`);
   }
 
   /**
    * ➕ Crear usuario (solo admin)
    */
-  async create(name: string, pin: string, role: Role = Role.USER) {
+  async create(username: string, pin: string, role: Role = Role.USER) {
     const hashedPin = await bcrypt.hash(pin, 10);
     return this.userModel.create({
-      name,
+      username,
       pin: hashedPin,
       role,
     });
@@ -91,18 +90,19 @@ async findAll() {
    * 📋 Listar usuarios por rol (admin)
    */
   findByRole(role: Role) {
-    return this.userModel.find({ role }).select('name role createdAt');
+    return this.userModel.find({ role }).select('username role createdAt');
   }
+
   /**
    * 🔐 Resetear PIN de un usuario (solo admin)
-   * @param name Nombre del usuario
+   * @param username Username del usuario
    * @param tempPin PIN temporal, por defecto '0000'
    */
-  async resetPinByName(name: string, tempPin = '0000') {
+  async resetPinByUsername(username: string, tempPin = '0000') {
     const hashedPin = await bcrypt.hash(tempPin, 10);
 
     const user = await this.userModel.findOneAndUpdate(
-      { name },
+      { username },
       { pin: hashedPin },
       { new: true },
     );
@@ -112,7 +112,7 @@ async findAll() {
     }
 
     return {
-      message: `PIN de ${name} reseteado`,
+      message: `PIN de ${username} reseteado`,
       tempPin,
     };
   }

@@ -7,7 +7,7 @@ export type UserDocument = User & Document;
 @Schema({ timestamps: true })
 export class User extends Document {
   @Prop({ unique: true, required: true })
-  name: string;
+  username: string;
 
   @Prop({ enum: Role, default: Role.USER })
   role: Role;
