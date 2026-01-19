@@ -14,6 +14,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { Role } from './common/enums/roles.enums';
 import { Roles } from './common/decorators/roles.decorator';
 import { RolesGuard } from './common/guards/roles.guard';
+
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -55,7 +56,7 @@ export class UsersController {
   @Roles(Role.ADMIN)
   @Post(':name/reset-pin')
   async resetPin(@Param('name') name: string) {
-    return this.usersService.resetPin(name);
+    return this.usersService.resetPinByName(name);
   }
 
   /**

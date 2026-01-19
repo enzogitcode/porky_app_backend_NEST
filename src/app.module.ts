@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
@@ -8,6 +8,7 @@ import { PigsModule } from './pigs/pigs.module';
 import { UsersModule } from './users/users.module';
 import { VacunasModule } from './vacunas/vacunas.module';
 import { AuthModule } from './auth/auth.module';
+import { UsersService } from './users/users.service';
 
 @Module({
   imports: [
@@ -27,19 +28,24 @@ import { AuthModule } from './auth/auth.module';
         if (!uri) {
           throw new Error('MONGO_URL no está definido en tu archivo de entorno!');
         }
-        console.log(`Mongo uri: ${uri}`)
+        console.log(`Mongo uri: ${uri}`);
         return { uri };
       },
     }),
 
-    // 3️⃣ Módulos de la app (UNA sola vez)
+    // 3️⃣ Módulos de la app
     PigsModule,
     UsersModule,
     VacunasModule,
     AuthModule,
-    
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements OnModuleInit {
+  constructor(private readonly usersService: UsersService) {}
+
+  async onModuleInit() {
+    await this.usersService.createAdminIfNotExists();
+  }
+}

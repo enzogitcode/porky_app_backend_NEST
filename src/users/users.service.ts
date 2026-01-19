@@ -2,40 +2,73 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
-import { User, UserDocument } from './schema/users.schema';
+import { User } from './schema/users.schema';
 import { Role } from './common/enums/roles.enums';
+
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name)
-    private readonly userModel: Model<UserDocument>,
+    private readonly userModel: Model<User>,
   ) {}
 
   /**
-   * Buscar usuario por nombre (login)
+ * Listar todos los usuarios (solo admin)
+ */
+async findAll() {
+  return this.userModel
+    .find()
+    .select('name role createdAt'); // solo devuelve campos públicos
+}
+
+
+  /**
+   * 🔍 Buscar usuario por nombre (login)
    */
-  async findByName(name: string): Promise<User | null> {
-    return this.userModel.findOne({ name }).exec();
+  findByName(name: string) {
+    return this.userModel.findOne({ name });
   }
 
   /**
-   * Crear usuario (solo admin)
+   * 👑 Seed automático del admin (solo una vez)
    */
-  async create(name: string, pin: string, role: Role = Role.USER): Promise<User> {
+  async createAdminIfNotExists() {
+    const adminName = process.env.ADMIN_NAME || 'admin';
+    const adminPin = process.env.ADMIN_PIN || '1234';
+
+    const exists = await this.userModel.findOne({ name: adminName });
+    if (exists) {
+      return;
+    }
+
+    const hashedPin = await bcrypt.hash(adminPin, 10);
+
+    await this.userModel.create({
+      name: adminName,
+      pin: hashedPin,
+      role: Role.ADMIN,
+    });
+
+    console.log(`✅ Admin creado automáticamente: ${adminName}`);
+  }
+
+  /**
+   * ➕ Crear usuario (solo admin)
+   */
+  async create(name: string, pin: string, role: Role = Role.USER) {
     const hashedPin = await bcrypt.hash(pin, 10);
-    const createdUser = new this.userModel({
+    return this.userModel.create({
       name,
       pin: hashedPin,
       role,
     });
-    return createdUser.save();
   }
 
   /**
-   * Eliminar usuario (solo admin)
+   * ❌ Eliminar usuario (solo admin)
    */
-  async remove(userId: string): Promise<{ message: string }> {
-    const user = await this.userModel.findByIdAndDelete(userId).exec();
+  async remove(userId: string) {
+    const user = await this.userModel.findByIdAndDelete(userId);
     if (!user) {
       throw new NotFoundException('Usuario no encontrado');
     }
@@ -43,51 +76,44 @@ export class UsersService {
   }
 
   /**
-   * Cambiar PIN del usuario autenticado
+   * 🔁 Cambiar PIN del usuario autenticado
    */
-  async updatePin(userId: string, newPin: string): Promise<User> {
-    const hashedPin = await bcrypt.hash(newPin, 10);
-    const updatedUser = await this.userModel
-      .findByIdAndUpdate(userId, { pin: hashedPin }, { new: true })
-      .exec();
+  async updatePin(userId: string, pin: string) {
+    const hashedPin = await bcrypt.hash(pin, 10);
+    return this.userModel.findByIdAndUpdate(
+      userId,
+      { pin: hashedPin },
+      { new: true },
+    );
+  }
 
-    if (!updatedUser) {
+  /**
+   * 📋 Listar usuarios por rol (admin)
+   */
+  findByRole(role: Role) {
+    return this.userModel.find({ role }).select('name role createdAt');
+  }
+  /**
+   * 🔐 Resetear PIN de un usuario (solo admin)
+   * @param name Nombre del usuario
+   * @param tempPin PIN temporal, por defecto '0000'
+   */
+  async resetPinByName(name: string, tempPin = '0000') {
+    const hashedPin = await bcrypt.hash(tempPin, 10);
+
+    const user = await this.userModel.findOneAndUpdate(
+      { name },
+      { pin: hashedPin },
+      { new: true },
+    );
+
+    if (!user) {
       throw new NotFoundException('Usuario no encontrado');
     }
-    return updatedUser;
-  }
 
-  /**
-   * Resetear PIN de un usuario (solo admin)
-   */
-  async resetPin(name: string, tempPin: string = '0000'): Promise<{ message: string }> {
-    const user = await this.userModel.findOne({ name }).exec();
-    if (!user) throw new NotFoundException('Usuario no encontrado');
-
-    const hashedPin = await bcrypt.hash(tempPin, 10);
-    user.pin = hashedPin;
-    await user.save();
-
-    return { message: `PIN de ${name} actualizado a temporal` };
-  }
-
-  /**
-   * Listar usuarios por rol – admin
-   */
-  async findByRole(role: Role): Promise<User[]> {
-    return this.userModel
-      .find({ role })
-      .select('name role createdAt')
-      .exec();
-  }
-
-  /**
-   * Listar todos los usuarios – admin
-   */
-  async findAll(): Promise<User[]> {
-    return this.userModel
-      .find()
-      .select('name role createdAt')
-      .exec();
+    return {
+      message: `PIN de ${name} reseteado`,
+      tempPin,
+    };
   }
 }
