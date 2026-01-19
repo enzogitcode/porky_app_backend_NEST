@@ -1,12 +1,6 @@
-import { Prop } from "@nestjs/mongoose";
-
+import { Role } from "../common/enums/roles.enums"
 export class User {
-    @Prop({unique:true, required:true})
     name:string
-
-    @Prop({default:'user'})
-    role:string
-
-    @Prop({required:true})
-    pinUser:string
+    role:Role
+    pin:string
 }
