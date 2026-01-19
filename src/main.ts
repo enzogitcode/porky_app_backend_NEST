@@ -17,7 +17,7 @@ async function bootstrap() {
   const localhost= configService.get<number>('LOCAL_HOST')
   //cors
   app.enableCors({
-    origin:`http://localhost:${localhost}`
+    origin:`http://localhost:${localhost}`,
   })
   
 //listen
