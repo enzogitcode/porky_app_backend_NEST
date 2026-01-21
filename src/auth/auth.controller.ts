@@ -8,14 +8,14 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   /**
-   * Login de usuario – usando cookie HttpOnly
+   * Login usando cookie HttpOnly
    */
   @Post('login')
   async login(
     @Body() body: LoginDto,
-    @Res({ passthrough: true }) res: Response, // permite enviar cookie sin bloquear respuesta
+    @Res({ passthrough: true }) res: Response,
   ) {
-    // 1️⃣ Validar usuario con PIN
+    // 1️⃣ Validar usuario y PIN
     const user = await this.authService.validateUser(body.username, body.pin);
 
     // 2️⃣ Crear JWT
@@ -27,13 +27,16 @@ export class AuthController {
 
     // 3️⃣ Guardar JWT en cookie HttpOnly
     res.cookie('jwt', token.access_token, {
-      httpOnly: true,                               // JS no puede leerla
-      secure: process.env.NODE_ENV === 'production', // HTTPS solo en producción
-      sameSite: 'strict',                            // protege contra CSRF
-      maxAge: 60 * 60 * 1000,                        // 1 hora
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 1000, // 1 hora
     });
 
-    // 4️⃣ Opcional: retornar mensaje sin exponer el token
-    return { message: 'Login exitoso' };
+    // 4️⃣ Retornar mensaje y datos públicos del usuario
+    return {
+      message: 'Login exitoso',
+      user: { id: user._id.toString(), username: user.username },
+    };
   }
 }

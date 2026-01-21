@@ -19,9 +19,6 @@ import { RolesGuard } from './common/guards/roles.guard';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  /**
-   * Crear un usuario (solo admin)
-   */
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(Role.ADMIN)
   @Post()
@@ -29,9 +26,6 @@ export class UsersController {
     return this.usersService.create(body.username, body.pin, body.role);
   }
 
-  /**
-   * Listar todos los usuarios (solo admin)
-   */
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(Role.ADMIN)
   @Get()
@@ -39,9 +33,6 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  /**
-   * Listar usuarios por rol (solo admin)
-   */
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(Role.ADMIN)
   @Get('role/:role')
@@ -49,9 +40,6 @@ export class UsersController {
     return this.usersService.findByRole(role);
   }
 
-  /**
-   * Resetear PIN de un usuario (solo admin)
-   */
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(Role.ADMIN)
   @Post(':username/reset-pin')
@@ -59,18 +47,12 @@ export class UsersController {
     return this.usersService.resetPinByUsername(username);
   }
 
-  /**
-   * Cambiar PIN propio (usuario autenticado)
-   */
   @UseGuards(AuthGuard('jwt'))
   @Patch('me/pin')
   async updateMyPin(@Request() req, @Body() body: { pin: string }) {
     return this.usersService.updatePin(req.user.userId, body.pin);
   }
 
-  /**
-   * Eliminar un usuario (solo admin)
-   */
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(Role.ADMIN)
   @Delete(':id')

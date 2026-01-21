@@ -2,27 +2,31 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  
-  //validations
-  app.useGlobalPipes(new ValidationPipe({
-       transform: true,   // convierte JSON en instancias de DTO y tipos correctos
-    whitelist: true,   // elimina campos extra que no estén en el DTO
-    
-  }))
-  const configService= app.get(ConfigService)
-  const localhost= configService.get<number>('LOCAL_HOST')
-  //cors
+  app.use(cookieParser()); // 🔥 NECESARIO PARA COOKIES
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+    }),
+  );
+
+  const configService = app.get(ConfigService);
+  const localhost = configService.get<number>('LOCAL_HOST');
+
   app.enableCors({
-    origin:`http://localhost:${localhost}`,
-  })
-  
-//listen
-const port = configService.get<number>('PORT') ||3000
+    origin: `http://localhost:${localhost}`,
+    credentials: true,
+  });
+
+  const port = configService.get<number>('PORT') || 3000;
   await app.listen(port);
-  console.log(`Escuchando en el puerto ${port}`)
+
+  console.log(`Escuchando en el puerto ${port}`);
 }
 bootstrap();
