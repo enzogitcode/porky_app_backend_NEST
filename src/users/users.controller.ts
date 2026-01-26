@@ -42,7 +42,7 @@ export class UsersController {
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(Role.ADMIN)
-  @Post(':username/reset-pin')
+  @Post('/reset-pin/:username')
   async resetPin(@Param('username') username: string) {
     return this.usersService.resetPinByUsername(username);
   }
